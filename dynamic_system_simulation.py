@@ -10,7 +10,7 @@ def cart_pendulum_sim(t , x, L=1., m=1., M = 1., g=9.81, F=0, f=0):
     x_3_dot = angular velocity
     x_4_dot = angular acceleration
     """
-    print(x)
+
     x1, x2, x3, x4 = x
     x_2_dot_nomi = (-m*g*np.sin(x3)*np.cos(x3) +
                     m*L*x4*x4*np.sin(x3) +
@@ -44,7 +44,9 @@ t_span = [0, 5]  # Time span for simulation
 
 
 args = (L, m, M, g, F, f)
-
-x_vals = integrate.solve_ivp(cart_pendulum_sim, t_span, x_init, args=args)
+t_eval = np.linspace(t_span[0],t_span[1],10)
+vals = integrate.solve_ivp(cart_pendulum_sim, t_span, x_init, t_eval=t_eval, args=args)
 #x_vals = integrate.odeint(cart_pendulum_sim, theta_init, x_init, t)
 
+print(vals.t)
+print(vals.y)
