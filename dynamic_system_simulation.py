@@ -3,34 +3,49 @@ from scipy import integrate
 import matplotlib.pyplot as plt
 
 
-def cart_pendulum_sim(theta_init, x_init, t, L=1, m=1, b=0, g=9.81, F=0, f=0):
+def cart_pendulum_sim(t , x, L=1., m=1., M = 1., g=9.81, F=0, f=0):
+    """
+    x_1_dot = velocity
+    x_2_dot = acceleration
+    x_3_dot = angular velocity
+    x_4_dot = angular acceleration
+    """
+    print(x)
+    x1, x2, x3, x4 = x
+    x_2_dot_nomi = (-m*g*np.sin(x3)*np.cos(x3) +
+                    m*L*x4*x4*np.sin(x3) +
+                    f*m*x4*np.cos(x3)+F)
 
-    x_dot_2_nomi = (-m*g*np.sin(theta_init[0])*np.cos(theta_init[0]) +
-                    m*l*theta_init[1]*theta_init[1]*np.sin(theta_init[0]) +
-                    f*m*theta_init[1]*np.cos(theta_init[0])+F)
+    x_2_dot_denomi = (M + (1 - np.cos(x3) * np.cos(x3)) * m)
 
-    x_dot_2_denomi = (M + (1 - np.cos(theta_init[0]) * np.cos(theta_init[0])) * m)
+    x_4_dot_nomi = (M+m)*(g*np.sin(x3)-f*x4) - \
+        (L*m*x4*x4*np.sin(x3)+F) * \
+        np.cos(x3)
 
-    theta_dot_2_nomi = (M+m)*(g*np.sin(theta_init[0])-f*theta_init[1]) - \
-        (l*m*theta_init[1]*theta_init[1]*np.sin(theta_init[0])+F) * \
-        np.cos(theta_init[0])
+    x_4_dot_denomi = L*x_2_dot_denomi
 
-    theta_dot_2_denomi = l*x_dot_2_denomi
+    x_1_dot = x2
+    x_2_dot = x_2_dot_nomi/x_2_dot_denomi
+    x_3_dot = x4
+    x_4_dot = x_4_dot_nomi/x_4_dot_denomi
 
-    x_dot_1 = x_init[1]
-    x_dot_2 = x_dot_2_nomi/x_dot_2_denomi
-    theta_dot_1 = theta_init[1]
-    theta_dot_2 = theta_dot_2_nomi/theta_dot_2_denomi
-
-    return x_dot_1, x_dot_2, theta_dot_1, theta_dot_2
-
-M = .5
-m = 0.2
-b = 0.1
-I = 0.006
-g = 9.8
-l = 0.3
+    return [x_1_dot, x_2_dot, x_3_dot, x_4_dot]
 
 
-vals = integrate.odeint(cart_pendulum_sim, theta_init, t)
+M = 0.5  # cart mass
+m = 0.2  # pendulum mass
+g = 9.81  # gravity
+L = 0.3  # pendulum length
+f = 0  # friction
+F = 0  # control input [N]
+
+x_init = [0, 0, np.pi, 0]  # Initial state
+
+t_span = [0, 5]  # Time span for simulation
+
+
+args = (L, m, M, g, F, f)
+
+x_vals = integrate.solve_ivp(cart_pendulum_sim, t_span, x_init, args=args)
+#x_vals = integrate.odeint(cart_pendulum_sim, theta_init, x_init, t)
 
