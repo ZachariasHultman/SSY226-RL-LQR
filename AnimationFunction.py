@@ -124,7 +124,7 @@ def animationfunction(vals, L):
     #  available from https://ffmpeg.zeranoe.com/builds/
     #  add ffmpeg.exe to path such as C:\ffmpeg\bin\ in
     #  environment variables
-
+ 
     # ani_a.save('Pendulum_Control.mp4',fps=30)
  
     # print("Angle is: ",np.rad2deg(angle))
