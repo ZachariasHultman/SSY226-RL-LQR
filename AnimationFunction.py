@@ -69,14 +69,14 @@ def animationfunction(vals, L):
     plt.plot(x2,y2,label='m2')
     plt.legend(loc="upper left")
 
-    fig = plt.figure(figsize=(10,100))
+    fig = plt.figure(figsize=(np.max(x2),np.max(x2)))
     ax = fig.add_subplot(111,autoscale_on=False,\
-                         xlim=(-1,np.max(x2)+1),ylim=(-1,np.max(x2)+1))
+                         xlim=(np.min(x2)-2,np.max(x2)+1),ylim=(-1,np.max(x2)+1))
     ax.set_xlabel('position')
     ax.get_yaxis().set_visible(False)
 
-    crane_rail, = ax.plot([-10,np.max(x2)],[-0.3,-0.3],'k-',lw=4)
-    start, = ax.plot([0,0],[-1.3,0.5],'k:',lw=2)
+    crane_rail, = ax.plot([np.min(x2)-2,np.max(x2)+1],[-0.3,-0.3],'k-',lw=4)
+    start, = ax.plot([np.min(x2)-1,np.min(x2)-1],[-1.3,0.5],'k:',lw=2)
     objective, = ax.plot([np.max(x2),np.max(x2)],[-1.3,0.5],'k:',lw=2)
     mass1, = ax.plot([],[],linestyle='None',marker='o',\
                      markersize=10,markeredgecolor='k',\
@@ -91,7 +91,7 @@ def animationfunction(vals, L):
     angle_template = 'angle = %.1fdegree'
     time_text = ax.text(0.05,0.9,'',transform=ax.transAxes)
     angle_text = ax.text(0.5,0.9,'',transform=ax.transAxes)
-    start_text = ax.text(0,-0.1,'start',ha='right')
+    start_text = ax.text(np.min(x2)+0.5,-0.1,'start',ha='right')
     end_text = ax.text(-1+np.max(x2),-0.1,'objective',ha='left')
 
     def init():
