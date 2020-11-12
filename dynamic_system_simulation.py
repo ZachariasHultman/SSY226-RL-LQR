@@ -3,8 +3,6 @@ from scipy import integrate
 import matplotlib.pyplot as plt
 
 
-
-
 def cart_pendulum_sim(t , x, L=1., m=1., M = 1., g=9.81, F=0, f=0,b=0):
     """
     x_1_dot = velocity
