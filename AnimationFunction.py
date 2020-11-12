@@ -31,23 +31,24 @@ def animationfunction(vals, L):
     y2 = np.abs(0 * vals.y[:1].T)  # Y position of cart always zero
 
     # Compute pole position
-    # angle = np.rad2deg(vals.y[2:3].T)
     angle = -vals.y[2:3].T
     x1 = x2 + L * np.cos(angle + np.pi / 2)
     y1 = y2 + L * np.sin(angle + np.pi / 2)
     angle_disp = -np.rad2deg(angle)
     # print("Size y1 is:", np.max(x2))
 
-    ##Plot animation
-    plt.figure(3)
-    plt.plot(vals.t, x1, label='m1x')
-    plt.plot(vals.t, x2, label='m2x')
-    plt.plot(vals.t, y1, label='m1y')
-    plt.plot(vals.t, y2, label='m2y')
-    plt.legend(loc="upper left")
-    plt.title("Cart and pendulum position")
+    ##Plot positions
+    # plt.figure(3)
+    # plt.plot(vals.t, x1, label='m1x')
+    # plt.plot(vals.t, x2, label='m2x')
+    # plt.plot(vals.t, y1, label='m1y')
+    # plt.plot(vals.t, y2, label='m2y')
+    # plt.legend(loc="upper left")
+    # plt.title("Cart and pendulum position")
+    #
+    # print("max time is:", np.max(vals.t))
 
-    print("max time is:", np.max(vals.t))
+    #Plot animation
 
     fig = plt.figure(figsize=(20, 20))
     ax = fig.add_subplot(111, autoscale_on=False, \
@@ -86,10 +87,6 @@ def animationfunction(vals, L):
         mass1.set_data([x1[i]], [y1[i]])
         mass2.set_data([x2[i]], [y2[i]])
         line.set_data([x2[i], x1[i]], [y2[i], y1[i]])
-        # mass1.set_data([0,0])
-        # mass2.set_data([0, 0])
-        # line.set_data([0, 0],[0,0])
-        # line.set_data([1,1],[0,0+L])
         time_text.set_text(time_template % vals.t[i])
         angle_text.set_text(angle_template % angle_disp[i])
         return line, mass1, mass2, time_text, angle_text
