@@ -32,7 +32,7 @@ def animationfunction(vals, L):
 
     # Compute pole position
     # angle = np.rad2deg(vals.y[2:3].T)
-    angle = vals.y[2:3].T
+    angle = -vals.y[2:3].T
     x1 = x2 + L * np.cos(angle + np.pi / 2)
     y1 = y2 + L * np.sin(angle + np.pi / 2)
     angle_disp = -np.rad2deg(angle)
