@@ -93,7 +93,7 @@ def animationfunction(vals, L):
     angle_text = ax.text(0.5,0.9,'',transform=ax.transAxes)
     start_text = ax.text(0,-0.1,'start',ha='right')
     end_text = ax.text(-1+np.max(x2),-0.1,'objective',ha='left')
-
+ 
     def init():
         mass1.set_data([],[])
         mass2.set_data([],[])
