@@ -5,7 +5,7 @@ class actor():
         self.W = np.ones((n, m))
         self.alpha = alpha
 
-    def approx_update(self, Q_uu, Q_xu, x):
+    def approx_update(self, Q_uu, Q_xu, x, Q_xu_tilde):
 
         tol = 0.01  # Tolerance
         error = tol+1  # Init error larger than tol
@@ -18,6 +18,8 @@ class actor():
 
             self.W = -self.alpha*np.matmul(x, e_a.T)
             # Calculates the error as 2-norm of the difference between the new and old W-matrix.
+            error_pt1=-self.alpha*np.matmul(np.matmul(x, x.T),self.W)-self.alpha*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.inv(Q_uu))
+
             error = np.linalg.norm(self.W-W_old, ord=2)
 
 def Q_uu(self):
