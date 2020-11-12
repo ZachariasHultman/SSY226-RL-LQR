@@ -5,12 +5,13 @@ import control as ctrl
 from dynamic_system_simulation import cart_pendulum_sim
 from dynamic_system_simulation import cart_pendulum_sim_lqr
 from tools import cart_pendulum_lin_lqr_gain
+from AnimationFunction import animationfunction
 
 
 M = 0.5  # cart mass
 m = 0.2  # pendulum mass
 g = 9.81  # gravity
-L = 0.3  # pendulum length
+L = 1  # pendulum length
 f = 0.1  # friction
 b= 0.5 #friction for cart
 F = 1  # control input [N]
@@ -30,18 +31,21 @@ vals = integrate.solve_ivp(cart_pendulum_sim, t_span, x_init, args=args, t_eval=
 vals_lqr = integrate.solve_ivp(cart_pendulum_sim_lqr, t_span, x_init_lqr, args=args_lqr, t_eval=t_eval)
 # x_vals = integrate.odeint(cart_pendulum_sim, x_init, t_span)
 
-# Plotting non-linear system
-plt.plot(vals.t,vals.y[:1].T,label='pos')
-plt.plot(vals.t,vals.y[1:2].T,label='vel')
-plt.plot(vals.t,vals.y[2:3].T,label='theta')
-plt.plot(vals.t,vals.y[3:4].T,label='theta_dot')
-plt.legend(loc="upper left")
-plt.show()
+animationfunction(vals_lqr, L)
 
-# Plotting controlled linear system
-plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='pos')
-plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='vel')
-plt.plot(vals_lqr.t,vals_lqr.y[2:3].T,label='theta')
-plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
-plt.legend(loc="upper left")
-plt.show()
+
+# # Plotting non-linear system
+# plt.plot(vals.t,vals.y[:1].T,label='pos')
+# plt.plot(vals.t,vals.y[1:2].T,label='vel')
+# plt.plot(vals.t,vals.y[2:3].T,label='theta')
+# plt.plot(vals.t,vals.y[3:4].T,label='theta_dot')
+# plt.legend(loc="upper left")
+# plt.show()
+
+# # Plotting controlled linear system
+# plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='pos')
+# plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='vel')
+# plt.plot(vals_lqr.t,vals_lqr.y[2:3].T,label='theta')
+# plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
+# plt.legend(loc="upper left")
+# plt.show()
