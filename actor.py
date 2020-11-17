@@ -2,7 +2,8 @@ import numpy as np
 
 class actor():
     def __init__(self, n, m, alpha):
-        self.W = np.ones((n, m))
+        s=(int(1/2*((n+m)*(n+m+1))),1)
+        self.W = np.ones(s)
         self.alpha = alpha
         self.error= np.Inf
 

@@ -55,7 +55,8 @@ for t in t_eval:
 
     x = x_ac[:, -1]
     critic.approx_update(x, x_prev, u, u_prev, Q, R, T)
-    actor.approx_update(critic.Q_uu(), critic.Q_ux(), x)
+    
+    actor.approx_update(critic.Q_uu(), critic.Q_ux(), x,Q_xu_tilde)
     K = actor.W
     u_prev = u
     x_prev = x

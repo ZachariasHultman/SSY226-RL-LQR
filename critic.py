@@ -5,7 +5,8 @@ import numpy as np
 
 class critic():
     def __init__(self, n, m, alpha):
-        self.W = np.ones(0.5*(n+m)*(n+m+1), 1)
+        s=(int(1/2*((n+m)*(n+m+1))),1)
+        self.W = np.ones(s)
         self.error = np.Inf
         self.alpha = alpha
         self.n = n
