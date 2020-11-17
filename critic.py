@@ -5,17 +5,19 @@ import numpy as np
 
 class critic():
     def __init__(self, n, m, alpha):
-        self.W = np.ones(0.5*(n+m)*(n+m+1), 1)
+        self.W = np.ones(int(1/2*((n+m)*(n+m+1)), 1))
         self.alpha = alpha
         self.n = n
         self.m = m
 
-    def approx_update(self, x, x_prev, u, u_prev, M, R, T, sigma):
-        U = np.concatenate(x, u)
-        U_prev = np.concatenate(x_prev, u_prev)
+    def approx_update(self, x, x_prev, u, u_prev, M, R, T):
+
+        U = np.concatenate((x, u))
+        U_prev = np.concatenate((x_prev, u_prev))
         tol = 0.01  # Tolerance
         error = tol+1  # Init error larger than tol
 
+        sigma = self.sigma_fun(u, u_prev)
         while error > tol:
             # Save old weights
 
@@ -26,12 +28,17 @@ class critic():
             # The integral term is calculated by assumptions that self-defined matrices M and R are diagonal
             # and assumption that the integration is discrete with time step T and only two points of evaluation
 
-            int_term = 0.5 * T * (np.matmul(np.matmul(x.T, M), x) + np.matmul(np.matmul(u.T, R), u) +
-                                  np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev))
+            if u.shape[0]<2:
+                int_term = 0.5 * T * ((np.matmul(np.matmul(x.T, M), x) + u*R*u) +
+                                      np.matmul(np.matmul(x_prev.T, M), x_prev) + u_prev*R*u_prev)
+            else:
+                int_term = 0.5 * T * (np.matmul(np.matmul(x.T, M), x) + np.matmul(np.matmul(u.T, R), u) +
+                                      np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev))
 
             # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
-
-            e = self.W.T * np.kron(U, U) + int_term - self.W.T * np.kron(U_prev, U_prev)
+            print(np.kron(U, U).shape)
+            print(self.W.T.shape)
+            e = np.matmul(self.W.T, np.kron(U, U)) + int_term - np.matmul(self.W.T, np.kron(U_prev, U_prev))
 
             # Update of the critic approximation weights (Equation 20)
 
@@ -60,3 +67,17 @@ class critic():
         # Transpose to get Q_ux
         q_ux = q_xu.T
         return q_ux
+
+    def sigma_fun(self, U_curr, U_prev):
+        """
+        Help function to calculate sigma in critic weights equation
+        Parameters: U_curr, which is [states; control signal] ([x;u]) concatinated at the current time step. array_like. Size NxM
+                    U_prev, which is [states; control signal] ([x;u]) concatinated at the previous time step. array_like Size NxM
+
+        Out: sigma, array like. Size N^2xM^2
+        """
+
+        sigma_pt1 = np.kron(U_curr, U_curr)
+        sigma_pt2 = np.kron(U_curr, U_curr)
+        sigma = np.kron(sigma_pt1, sigma_pt2)
+        return sigma
