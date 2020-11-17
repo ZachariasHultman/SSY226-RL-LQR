@@ -5,15 +5,17 @@ import numpy as np
 
 class critic():
     def __init__(self, n, m, alpha):
-        self.W = np.ones(int(1/2*((n+m)*(n+m+1)), 1))
+        s=(int(1/2*((n+m)*(n+m+1))),1)
+        self.W = np.ones(s)
         self.alpha = alpha
         self.n = n
         self.m = m
 
     def approx_update(self, x, x_prev, u, u_prev, M, R, T):
 
-        U = np.concatenate((x, u))
-        U_prev = np.concatenate((x_prev, u_prev))
+        U = np.concatenate((x.T, u.T)).T
+        U_prev = np.concatenate((x_prev.T, u_prev.T)).T
+        print(U)
         tol = 0.01  # Tolerance
         error = tol+1  # Init error larger than tol
 
@@ -36,7 +38,8 @@ class critic():
                                       np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev))
 
             # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
-            print(np.kron(U, U).shape)
+            print(np.kron(U, U))
+            print(int_term)
             print(self.W.T.shape)
             e = np.matmul(self.W.T, np.kron(U, U)) + int_term - np.matmul(self.W.T, np.kron(U_prev, U_prev))
 

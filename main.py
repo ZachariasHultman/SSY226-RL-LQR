@@ -50,6 +50,7 @@ u_prev = np.zeros(1)
 x_prev = x_ac[:, 0]
 for t in t_eval:
     u = -np.matmul(K, x_ac[:, -1])
+    
     u = np.atleast_1d(u)
 
     x = x_ac[:, -1]
