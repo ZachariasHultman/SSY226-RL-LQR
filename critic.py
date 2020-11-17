@@ -5,8 +5,8 @@ import numpy as np
 
 class critic():
     def __init__(self, n, m, alpha):
-        s=(int(1/2*((n+m)*(n+m+1))),1)
-        self.W = np.ones(s)
+        self.W = np.ones(0.5*(n+m)*(n+m+1), 1)
+        self.error = np.Inf
         self.alpha = alpha
         self.n = n
         self.m = m
@@ -38,9 +38,6 @@ class critic():
                                       np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev))
 
             # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
-            print(np.kron(U, U))
-            print(int_term)
-            print(self.W.T.shape)
             e = np.matmul(self.W.T, np.kron(U, U)) + int_term - np.matmul(self.W.T, np.kron(U_prev, U_prev))
 
             # Update of the critic approximation weights (Equation 20)
@@ -48,8 +45,11 @@ class critic():
             self.W = -self.alpha * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
 
             # Calculates the error as 2-norm of the difference between the new and old W-matrix.
+            error_weights = W_old - self.W
+            error = -self.alpha * np.matmul(np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2), error_weights)
+            error_diff = np.linalg.norm(error - self.error, ord=2)
+            self.error = error
 
-            error = np.linalg.norm(self.W-W_old, ord=2)
 
     def Q_uu(self):
         n = self.n
