@@ -1,48 +1,32 @@
 import numpy as np
 
-class actor():
-    def __init__(self, n, m, alpha):
-        s=(int(1/2*((n+m)*(n+m+1))),1)
-        self.W = np.ones(s)
-        self.alpha = alpha
-        self.error= np.Inf
 
-    def approx_update(self, Q_uu, Q_xu, x, Q_xu_tilde):
 
-        tol = 0.01  # Tolerance
-        error_diff = tol+1  # Init error larger than tol
-        
-        W_old = self.W
-        # while error_diff > tol:
-            
-        # Compute new Weights
-        e_a = np.matmul(self.W.T, x) + np.matmul(np.matmul(np.linalg.inv(Q_uu), Q_xu), x)
+def approx_update(x, Q_xu_tilde, W_a_hat, n, m, alpha_a):
 
-        self.W = -self.alpha*np.matmul(x, e_a.T)
-        # Calculates the error as 2-norm of the difference between the new and old W-matrix.
-        W_a_tilde=-np.matmul(Q_xu,np.linalg.inv(Q_uu))-self.W
-        error=-self.alpha*np.matmul(np.matmul(x, x.T),W_a_tilde)-self.alpha*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.inv(Q_uu))
 
-        # error = np.linalg.norm(self.W-W_old, ord=2)
-        error_diff = np.linalg.norm(self.error - error, ord=2)
-        self.error=error
-        # Save old weights
-        W_old = self.W
+    # compute actor error
+    e_a = np.matmul(W_a_hat.T, x) + np.matmul(np.matmul(np.linalg.inv(Q_uu(n,m,W_a_hat)), Q_xu(n,m,W_a_hat)), x)
 
-def Q_uu(self):
-    n = self.n
-    m = self.m
+    W_a_hat_dot = -alpha_a*np.matmul(x, e_a.T)
+    # Calculates the error as 2-norm of the difference between the new and old W-matrix.
+    W_a_tilde = -np.matmul(Q_xu,np.linalg.inv(Q_uu))-W_a_hat
+    W_a_tilde_dot = -alpha_a*np.matmul(np.matmul(x, x.T),W_a_tilde)-alpha_a*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.inv(Q_uu))
+
+    return W_a_hat_dot, W_a_tilde_dot
+
+def Q_uu(n,m,W_hat):
+
     # Extract Q_uu from Wc on vector form from
-    q_vec = self.W[n * (n + 1) / 2 + 1 + n * m:(n + m) * (n + m + 1) / 2]
+    q_vec = W_hat[int(n * (n + 1) / 2 + 1 + n * m):int((n + m) * (n + m + 1) / 2)]
     # Reshape to matrix form
     q_uu = q_vec.reshape((m, m))
+    return q_uu
 
+def Q_xu(n,m,W_hat):
 
-def Q_xu(self):
-    n = self.n
-    m = self.m
     # Extract Q_xu from Wc on vector form from
-    q_vec = self.W[n * (n + 1) / 2 + 1:n * (n + 1) / 2 + n * m]
+    q_vec = W_hat[int(n * (n + 1) / 2 + 1):int(n * (n + 1) / 2 + n * m)]
     # Reshape to matrix form
-    q_xu = q_vec.reshape((self.m, self.m))
+    q_xu = q_vec.reshape((n, m))
     return q_xu

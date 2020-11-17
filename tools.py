@@ -54,6 +54,7 @@ def sigma_fun(U_curr,U_prev):
 
 
 def kronecker(A,B,n,m):
+
     k=A.shape[0]
     s=(int(1/2*((k)*(k+1))),1)
     C=np.ones(s)
@@ -72,3 +73,13 @@ def kronecker(A,B,n,m):
 
     return C
 
+def vech_to_mat(a):
+    n = int(-1/2 + np.sqrt(1/4+2*len(a)))
+
+    A=np.zeros((n,n))
+    for i in range(len(a)):
+        for j in range(i,len(a)):
+            A[i,j]=a[j]
+            A[j,i]=a[j]
+
+    return A
