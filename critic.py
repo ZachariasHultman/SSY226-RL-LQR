@@ -64,6 +64,9 @@ class critic():
         q_vec = self.W[n * (n + 1) / 2 + 1 + n * m:(n + m) * (n + m + 1) / 2]
         # Reshape to matrix form
         q_uu = q_vec.reshape((m, m))
+
+    
+
         return q_uu
 
     def Q_ux(self):
