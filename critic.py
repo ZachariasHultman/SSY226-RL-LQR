@@ -1,4 +1,5 @@
 import numpy as np
+from tools import kronecker
 
 # equation 20 is the following function
 
@@ -19,37 +20,41 @@ class critic():
         print(U)
         tol = 0.01  # Tolerance
         error = tol+1  # Init error larger than tol
-
+        W_old=self.W
         sigma = self.sigma_fun(u, u_prev)
-        while error > tol:
-            # Save old weights
+        # while error > tol:
+            
 
-            W_old = self.W
+        # Compute new Weights
+        # See equation below (e=...) to understand the need of the integral term.
+        # The integral term is calculated by assumptions that self-defined matrices M and R are diagonal
+        # and assumption that the integration is discrete with time step T and only two points of evaluation
 
-            # Compute new Weights
-            # See equation below (e=...) to understand the need of the integral term.
-            # The integral term is calculated by assumptions that self-defined matrices M and R are diagonal
-            # and assumption that the integration is discrete with time step T and only two points of evaluation
+        if u.shape[0]<2:
+            int_term = 0.5 * T * ((np.matmul(np.matmul(x.T, M), x) + u*R*u) +
+                                    np.matmul(np.matmul(x_prev.T, M), x_prev) + u_prev*R*u_prev)
+        else:
+            int_term = 0.5 * T * (np.matmul(np.matmul(x.T, M), x) + np.matmul(np.matmul(u.T, R), u) +
+                                    np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev))
 
-            if u.shape[0]<2:
-                int_term = 0.5 * T * ((np.matmul(np.matmul(x.T, M), x) + u*R*u) +
-                                      np.matmul(np.matmul(x_prev.T, M), x_prev) + u_prev*R*u_prev)
-            else:
-                int_term = 0.5 * T * (np.matmul(np.matmul(x.T, M), x) + np.matmul(np.matmul(u.T, R), u) +
-                                      np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev))
+        # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
+        e = np.matmul(self.W.T, kronecker(U, U,self.n,self.m)) + int_term - np.matmul(self.W.T, kronecker(U_prev, U_prev,self.n,self.m))
 
-            # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
-            e = np.matmul(self.W.T, np.kron(U, U)) + int_term - np.matmul(self.W.T, np.kron(U_prev, U_prev))
+        print('eureka')
 
-            # Update of the critic approximation weights (Equation 20)
+        # Update of the critic approximation weights (Equation 20)
 
-            self.W = -self.alpha * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
+        self.W = -self.alpha * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
 
-            # Calculates the error as 2-norm of the difference between the new and old W-matrix.
-            error_weights = W_old - self.W
-            error = -self.alpha * np.matmul(np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2), error_weights)
-            error_diff = np.linalg.norm(error - self.error, ord=2)
-            self.error = error
+        # Calculates the error as 2-norm of the difference between the new and old W-matrix.
+        error_weights = W_old - self.W
+
+        error = -self.alpha * (np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2))* error_weights
+        error_diff = np.linalg.norm(error - self.error, ord=2)
+        self.error = error
+
+        # Save old weights
+        W_old = self.W
 
 
     def Q_uu(self):

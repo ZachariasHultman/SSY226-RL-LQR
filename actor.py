@@ -11,21 +11,23 @@ class actor():
 
         tol = 0.01  # Tolerance
         error_diff = tol+1  # Init error larger than tol
+        
+        W_old = self.W
+        # while error_diff > tol:
+            
+        # Compute new Weights
+        e_a = np.matmul(self.W.T, x) + np.matmul(np.matmul(np.linalg.inv(Q_uu), Q_xu), x)
 
-        while error_diff > tol:
-            # Save old weights
-            W_old = self.W
-            # Compute new Weights
-            e_a = np.matmul(self.W.T, x) + np.matmul(np.matmul(np.linalg.inv(Q_uu), Q_xu), x)
+        self.W = -self.alpha*np.matmul(x, e_a.T)
+        # Calculates the error as 2-norm of the difference between the new and old W-matrix.
+        W_a_tilde=-np.matmul(Q_xu,np.linalg.inv(Q_uu))-self.W
+        error=-self.alpha*np.matmul(np.matmul(x, x.T),W_a_tilde)-self.alpha*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.inv(Q_uu))
 
-            self.W = -self.alpha*np.matmul(x, e_a.T)
-            # Calculates the error as 2-norm of the difference between the new and old W-matrix.
-            W_a_tilde=-np.matmul(Q_xu,np.linalg.inv(Q_uu))-self.W
-            error=-self.alpha*np.matmul(np.matmul(x, x.T),W_a_tilde)-self.alpha*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.inv(Q_uu))
-
-            # error = np.linalg.norm(self.W-W_old, ord=2)
-            error_diff = np.linalg.norm(self.error - error, ord=2)
-            self.error=error
+        # error = np.linalg.norm(self.W-W_old, ord=2)
+        error_diff = np.linalg.norm(self.error - error, ord=2)
+        self.error=error
+        # Save old weights
+        W_old = self.W
 
 def Q_uu(self):
     n = self.n

@@ -9,7 +9,7 @@ from actor import actor
 from critic import critic
 
 M = 0.5  # cart mass
-m = 0.2  # pendulum mass
+m_p = 0.2  # pendulum mass
 g = 9.81  # gravity
 L = 1  # pendulum length
 f = 0.1  # friction
@@ -29,10 +29,10 @@ Q = np.array([[ 1,         0,                 0,                  0],
 
 R = 0.01
 
-K = cart_pendulum_lin_lqr_gain(L, m, M, g, f, b, Q, R)  # LQR gain for linearized system
+K = cart_pendulum_lin_lqr_gain(L, m_p, M, g, f, b, Q, R)  # LQR gain for linearized system
 
-args = (L, m, M, g, F, f, b)  # arguments for non-linear system
-args_lqr = (K, L, m, M, g, f, b)  # arguments for controlled linear system
+args = (L, m_p, M, g, F, f, b)  # arguments for non-linear system
+args_lqr = (K, L, m_p, M, g, f, b)  # arguments for controlled linear system
 
 vals = integrate.solve_ivp(cart_pendulum_sim, t_span, x_init, args=args, t_eval=t_eval)
 vals_lqr = integrate.solve_ivp(cart_pendulum_sim_lqr, t_span, x_init_lqr, args=args_lqr, t_eval=t_eval)
@@ -55,7 +55,8 @@ for t in t_eval:
 
     x = x_ac[:, -1]
     critic.approx_update(x, x_prev, u, u_prev, Q, R, T)
-    
+    q_vec_tmp = self.W[critic.n * (critic.n + 1) / 2 + 1:critic.n * (critic.n + 1) / 2 + critic.n * critic.m]
+    Q_xu_tilde= q_vec_tmp.reshape((critic.n, critic.m))
     actor.approx_update(critic.Q_uu(), critic.Q_ux(), x,Q_xu_tilde)
     K = actor.W
     u_prev = u

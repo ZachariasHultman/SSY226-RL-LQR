@@ -51,3 +51,23 @@ def sigma_fun(U_curr,U_prev):
     sigma_pt2=np.kron(U_curr,U_curr)
     sigma=np.kron(sigma_pt1,sigma_pt2)
     return sigma
+
+
+def kronecker(A,B,n,m):
+    k=A.shape[0]
+    s=(int(1/2*((k)*(k+1))),1)
+    C=np.ones(s)
+
+    for i in range(n):
+        C[i]=A[i]*B[i]
+
+    for i in range(n+m-1):
+        for j in range(i,n+m-1):
+            C[i+n]=A[i]*B[j]
+
+    for i in range(1,m+1):
+        C[-i]=A[-i]*B[-i]
+
+
+
+    return C
