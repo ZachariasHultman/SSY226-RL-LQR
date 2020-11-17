@@ -66,4 +66,3 @@ def cart_pendulum_sim_lqr(t , x, K, L=1., m=1., M = 1., g=9.81 , f=0 ,b=0):
     x_4_dot = x_4_dot_nomi/x_4_dot_denomi ###
 
     return [x_1_dot, x_2_dot, x_3_dot, x_4_dot]
-
