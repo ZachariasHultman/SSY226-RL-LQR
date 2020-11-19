@@ -3,8 +3,6 @@ import numpy as np
 
 
 def approx_update(x, Q_xu_tilde, W_a_hat, n, m, alpha_a):
-
-
     # compute actor error
     e_a = np.matmul(W_a_hat.T, x) + np.matmul(np.matmul(np.linalg.inv(Q_uu(n,m,W_a_hat)), Q_xu(n,m,W_a_hat)), x)
 
