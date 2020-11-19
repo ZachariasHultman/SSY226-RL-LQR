@@ -21,7 +21,7 @@ F = 1  # control input [N]
 x_init = [0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot
 x_init_lqr=[0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot for linearized system
 
-t_span =[0, 2]  # Time span for simulation
+t_span =[0, 4]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],500)  # Time span for simulation
 
 Q = np.array([[ 1,         0,                 0,                  0],
@@ -60,7 +60,7 @@ x_ac[:n, 0] = x_init_lqr
 
 t_ac = np.ndarray(shape=(1))
 
-alpha_c = 10
+alpha_c = 50
 alpha_a = 2
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 K = np.ones((n,m))
@@ -76,7 +76,7 @@ x_prev=x_ac[:n, 0]
 flag=True
 t_span_ac=(0,0)
 
-explore=0.001
+explore=0.01
 while flag == True:
    
 
@@ -114,7 +114,6 @@ while flag == True:
             u=np.atleast_1d(u)      
             u_prev=0
             u_prev=np.atleast_1d(u_prev)
-            # print(x_ac)
             print(t_span_ac[0])
             t_span_ac=(0,0)
             t_ac = np.ndarray(shape=(1))
