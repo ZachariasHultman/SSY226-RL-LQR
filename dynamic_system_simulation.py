@@ -5,7 +5,7 @@ import critic
 import actor
 
 def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_a, M, R, T):
-    explore=0.01
+    explore=0.1
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x = np.expand_dims(y[:n], 1)
     W_a_hat = y[n:n+n]

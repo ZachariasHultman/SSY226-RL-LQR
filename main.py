@@ -21,7 +21,7 @@ F = 1  # control input [N]
 x_init = [0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot
 x_init_lqr=[0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot for linearized system
 
-t_span =[0, 4]  # Time span for simulation
+t_span =[0, 2]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],500)  # Time span for simulation
 
 Q = np.array([[ 1,         0,                 0,                  0],
@@ -29,7 +29,7 @@ Q = np.array([[ 1,         0,                 0,                  0],
             [ 0,         0,                 10,                  0],
             [ 0,         0,                 0,                  100]])
 
-R = 0.01
+R = 0.1
 
 K = cart_pendulum_lin_lqr_gain(L, m_p, M_p, g, f, b, Q, R)  # LQR gain for linearized system
 # print(K)
@@ -60,7 +60,7 @@ x_ac[:n, 0] = x_init_lqr
 
 t_ac = np.ndarray(shape=(1))
 
-alpha_c = 50
+alpha_c = 10
 alpha_a = 2
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 K = np.ones((n,m))
@@ -129,12 +129,10 @@ while flag == True:
 
         x_ac = np.concatenate((x_ac, vals_ac.y), axis=1)
         t_ac = np.concatenate((t_ac, vals_ac.t), axis=0)
-        # print(t)
+        print(t_span_ac[1])
 
 
        
-
-    
 
 ani_vals = x_ac[:4]
 animationfunction(ani_vals, t_ac ,L)
