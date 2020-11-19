@@ -69,17 +69,52 @@ def kronecker(A,B,n,m):
     for i in range(1,m+1):
         C[-i]=A[-i]*B[-i]
 
-
-
     return C
 
-def vech_to_mat(a):
-    n = int(-1/2 + np.sqrt(1/4+2*len(a)))
 
-    A=np.zeros((n,n))
-    for i in range(len(a)):
-        for j in range(i,len(a)):
-            A[i,j]=a[j]
-            A[j,i]=a[j]
+def vech_to_mat_sym(a, n):
+    """
+    Takes a vector which represents the elements in a upper (or lower)
+    triangular matrix and returns a symmetric (n x n) matrix.
+    The off-diagonal elements are divided by 2.
 
+    :param a: input vector of type np array and size n(n+1)/2
+    :param n: dimension of symmetric output matrix A
+    :return: symmetric matrix of type np array size (n x n)
+    """
+
+    A = np.ndarray((n, n))
+
+    c = 0
+    for j in range(n):
+        for i in range(j, n):
+
+            if i == j:
+                A[i, j] = a[c]
+                A[j, i] = a[c]
+            else:
+                A[i, j] = a[c]/2
+                A[j, i] = a[c]/2
+            c += 1
+
+    return A
+
+
+def vech_to_mat(a, n, m):
+    """
+    Takes a vector a and stacks the elements in a (n x m) matrix
+
+    :param a: vector of type np array of size nm
+    :param n: rows in output matrix
+    :param m: columns in output matrix
+    :return: (n x m) matrix of type np array
+    """
+
+    A = np.ndarray((n, m))
+    print(a)
+    print(n)
+    print(m)
+    for j in range(m):
+        for i in range(n):
+            A[i, j] = a[i+n*j]
     return A
