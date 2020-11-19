@@ -3,8 +3,6 @@ import scipy.integrate as integrate
 import torch
 from collections import deque
 
-#from gridworld_mdp import *
-
 #Implementing algoritm 3a from "integral policy interation".
 #curr_policy: current policy Pi_i
 #beta: weighting factor
@@ -16,7 +14,7 @@ from collections import deque
 #R_tau: reward
 
 class IQPI:
-    def __init__(self,curr_policy,beta,mu,gamma,k_1,k_2,curr_t,next_t,q_i,R_tau,tau):
+    def __init__(self,curr_policy,beta,mu,gamma,k_1,k_2,curr_t,next_t,q_i,R_tau,tau,Z_tau):
         self.curr_policy=curr_policy
         self.beta=beta
         self.mu=mu
@@ -28,18 +26,21 @@ class IQPI:
         self.q_i=q_i
         self.R_tau=R_tau
         self.tau=tau
+        self.Z_tau=Z_tau
 
-    def to_integrate(self):
-        return self.beta**(self.tau-self.curr_t) * self.Z_tau       #+ self.beta * self.q_i
+    def to_integrate(self,beta,tau,curr_t,Z_tau):
+        self.integrand = beta ** (tau - curr_t) * Z_tau
+        return self.integrand       #+ self.beta * self.q_i
        #return self.beta * self.Z_tau + self.beta*self.q_i
 
-    def eval(self):
-        self.k_3 = self.k_2 - np.log(self.gamma**(-1) * self.beta)
-        self.Z_tau = self.k_1 * self.R_tau - self.k_2 * self.q_i + self.k_3 * self.q_i
-        self.q_i=integrate.quad(to_integrate,self.curr_t,self.next_t, args=(self.Z_tau,self.curr_t))+self.beta * self.q_i
-        return self.q_i
-    def improv(self):
-        self.curr_policy=np.argmax(self.q_i)
+    def eval(self,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand):
+        self.k_3 = k_2 - np.log(gamma**(-1) * beta)
+        self.Z_tau = k_1 * R_tau - k_2 * q_i + self.k_3 * q_i
+        self.q_i=integrate.quad(integrand,curr_t,next_t, args=(self.Z_tau,curr_t))+beta * q_i
+        return self.q_i, self.Z_tau, self.k_3
+
+    def improv(self,q_i):
+        self.curr_policy=np.argmax(q_i)
         return self.curr_policy
 
 # testing algorithm below
@@ -50,27 +51,6 @@ def eps_greedy_policy(q_values, eps):
     probs[best_a]+=(1-eps)
     policy=probs
     return policy
-
-
-#def q_learning(eps, gamma, mdp):
-#    Q = np.zeros([16, 4])  # state action value table
-#    pi = np.zeros([16])  # greedy policy table
-#    alpha = .01
-    # YOUR CODE HERE
-
-#    episodes = 10000
-#    for episode in range(episodes):
-#        state, reward, terminal = mdp.reset()
-#        s = state
-        # for s in mdp.get_states():
-#        while terminal == False:
-#            policy = eps_greedy_policy(Q[s], eps)
-#            a = np.random.choice(len(policy), p=policy)
-#            s_next, r, terminal = mdp.step(a)
-#            Q[s, a] = Q[s, a] + alpha * (r + gamma * np.max(Q[s_next]) - Q[s, a])
-#            s = s_next
-#    for s in mdp.get_states():
-#        pi[s] = np.argmax(Q[s])
 
 
 def cart_pendulum_sim(t , x, L=1., m=1., M = 1., g=9.81, F=0, f=0,f_cart=0):
@@ -173,20 +153,24 @@ curr_t=1
 next_t=2
 q_i=np.ones([4,2])
 R_tau=np.ones([4,1])
+Z_tau=1
 tau=1
 
 device=device = torch.device("cpu")
 replay_buffer=ExperienceReplay(device, len(x), buffer_size=1e+6) #creating replay buffer
 
 if k_1>0 and k_2>0:
-    policy_iter=IQPI(curr_policy,beta,mu,gamma,k_1,k_2,curr_t,next_t,q_i,R_tau,tau) #is working
-    print(policy_iter.improv())
+    policy_iter=IQPI(curr_policy,beta,mu,gamma,k_1,k_2,curr_t,next_t,q_i,R_tau,tau,Z_tau) #is working
+    #print(policy_iter.improv())
+    integrand=policy_iter.to_integrate(beta,tau,curr_t,Z_tau)
+    eval_pol=policy_iter.eval(k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand) #def eval(self,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand):
+    improv_pol=policy_iter.improv(q_i)
 #Improving policy until it becomes optimal
-    while curr_policy!=all(policy_iter.improv()):
-        policy_iter = IQPI(curr_policy, beta, mu, gamma, k_1, k_2, curr_t, next_t, q_i, R_tau,tau)
+    while policy_iter.curr_policy!=all(improv_pol):
+        policy_iter = IQPI(curr_policy, beta, mu, gamma, k_1, k_2, curr_t, next_t, q_i, R_tau,tau,Z_tau)
         curr_t=next_t
         next_t=next_t+1
-
+        improv_pol = policy_iter.improv()
 
 
 
