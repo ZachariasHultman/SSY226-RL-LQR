@@ -6,19 +6,25 @@ import actor
 
 def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_a, M, R, T):
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
-    x = y[:n]
+    x = np.expand_dims(y[:n], 1)
+
     W_a_hat = y[n:n+n]
     W_c_hat = y[n+n:n+n+s]
     W_c_tilde = y[n+n+s:]
-    print(W_c_tilde.shape)
+
     u = -np.matmul(W_a_hat.T, x)
-    u = np.atleast_1d(u)
+    u = np.atleast_2d(u)
     W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
-    W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, n, m, alpha_a)
+    W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
 
-    x_1_dot, x_2_dot, x_3_dot, x_4_dot = sysfunc(x, u, L, m_p, M_p, g, F, f, b)
+    x_dot = sysfunc(x, u, L, m_p, M_p, g, f, b)
+    states = x_dot
+    states += [s for s in W_a_hat_dot]
+    states += [s for s in W_c_hat_dot]
+    states += [s for s in W_c_tilde_dot]
 
-    return [x_1_dot, x_2_dot, x_3_dot, x_4_dot, W_a_hat_dot, W_c_hat_dot, W_c_tilde_dot]
+
+    return states
 
 def cart_pendulum_sim(t ,x, L=1., m=1., M = 1., g=9.81, F=0, f=0,b=0):
     """
@@ -116,4 +122,4 @@ def cart_pendulum_sim_lqr2(x, F, L=1., m=1., M=1., g=9.81, f=0, b=0):
     x_3_dot = x4
     x_4_dot = x_4_dot_nomi / x_4_dot_denomi  ###
 
-    return x_1_dot, x_2_dot, x_3_dot, x_4_dot
+    return [x_1_dot, x_2_dot, x_3_dot, x_4_dot]

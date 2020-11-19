@@ -1,12 +1,13 @@
 import numpy as np
 from tools import kronecker
+from tools import vech_to_mat_sym, vech_to_mat
 
 # equation 20 is the following function
 
 
 def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m):
 
-    U = np.concatenate((x.T, u.T)).T
+    U = np.concatenate((x.T, u.T), 1).T
     U_prev = np.concatenate((x_prev.T, u_prev.T)).T
 
     sigma = sigma_fun(U, U_prev, n, m)
@@ -34,26 +35,30 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n 
 
     W_c_hat_dot = -alpha_c * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
 
-    W_c_tilde_dot = -alpha_c * (np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2))* W_c_tilde
+    W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
 
-    Q_xu_tilde = Q_xu(n, m, W_c_hat)
+
+    Q_bar_tilde = vech_to_mat_sym(W_c_tilde, n + m)
+    Q_xu_tilde = Q_bar_tilde[n:,:n].T
 
     return W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde
+
 
 def Q_uu(n,m,W_hat):
 
     # Extract Q_uu from Wc on vector form from
     q_vec = W_hat[int(n * (n + 1) / 2 + 1 + n * m):int((n + m) * (n + m + 1) / 2)]
     # Reshape to matrix form
-    q_uu = q_vec.reshape((m, m))
+    q_uu = vech_to_mat_sym(q_vec, m)
     return q_uu
+
 
 def Q_xu(n,m,W_hat):
 
     # Extract Q_xu from Wc on vector form from
     q_vec = W_hat[int(n * (n + 1) / 2 + 1):int(n * (n + 1) / 2 + n * m)]
     # Reshape to matrix form
-    q_xu = q_vec.reshape((n, m))
+    q_xu = vech_to_mat(q_vec, n, m)
     return q_xu
 
 def sigma_fun(U_curr, U_prev, n, m):
