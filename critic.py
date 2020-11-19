@@ -8,6 +8,8 @@ from tools import vech_to_mat_sym, vech_to_mat
 def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m):
 
     U = np.concatenate((x.T, u.T), 1).T
+
+
     U_prev = np.concatenate((x_prev.T, u_prev.T)).T
 
     sigma = sigma_fun(U, U_prev, n, m)
