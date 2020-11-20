@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
-def animationfunction(vals, L):
+def animationfunction(vals,t , L):
     """
     vals = Class containing all the states and time stamps
     L = Length of pendulum
@@ -27,11 +27,11 @@ def animationfunction(vals, L):
 
     #################=====Get actual data=====####################################
     # Get cart position
-    x2 = vals.y[:1].T
-    y2 = np.abs(0 * vals.y[:1].T)  # Y position of cart always zero
+    x2 = vals[:1].T
+    y2 = np.abs(0 * vals[:1].T)  # Y position of cart always zero
 
     # Compute pole position
-    angle = -vals.y[2:3].T
+    angle = -vals[2:3].T
     x1 = x2 + L * np.cos(angle + np.pi / 2)
     y1 = y2 + L * np.sin(angle + np.pi / 2)
     angle_disp = -np.rad2deg(angle)
@@ -87,12 +87,12 @@ def animationfunction(vals, L):
         mass1.set_data([x1[i]], [y1[i]])
         mass2.set_data([x2[i]], [y2[i]])
         line.set_data([x2[i], x1[i]], [y2[i], y1[i]])
-        time_text.set_text(time_template % vals.t[i])
+        time_text.set_text(time_template % t[i])
         angle_text.set_text(angle_template % angle_disp[i])
         return line, mass1, mass2, time_text, angle_text
 
     ani_a = animation.FuncAnimation(fig, animate, \
-                                    np.arange(1, len(vals.t)), \
+                                    np.arange(1, len(t)), \
                                     interval=5, blit=False, init_func=init)
 
     # # call the animator.  blit=True means only re-draw the parts that have changed.
