@@ -37,8 +37,7 @@ def cart_pendulum_lin_lqr_gain(L, m, M, g, f, b, Q, R):
     return K
 
 
-
-def sigma_fun(U_curr,U_prev):
+def sigma_fun(U_curr, U_prev, n, m):
     """
     Help function to calculate sigma in critic weights equation
     Parameters: U_curr, which is [states; control signal] ([x;u]) concatinated at the current time step. array_like. Size NxM
@@ -47,10 +46,12 @@ def sigma_fun(U_curr,U_prev):
     Out: sigma, array like. Size N^2xM^2
     """
 
-    sigma_pt1=np.kron(U_curr,U_curr)
-    sigma_pt2=np.kron(U_prev,U_prev)
-    sigma=np.kron(sigma_pt1,sigma_pt2)
+    sigma_pt1 = kronecker(U_curr, U_curr, n, m)
+    sigma_pt2 = kronecker(U_prev, U_prev, n, m)
+
+    sigma = sigma_pt1 - sigma_pt2
     return sigma
+
 
 
 def kronecker(A,B,n,m):
