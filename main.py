@@ -21,7 +21,7 @@ F = 1  # control input [N]
 x_init = [0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot
 x_init_lqr=[0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot for linearized system
 
-t_span =[0, 2]  # Time span for simulation
+t_span =[0, 0.8]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],500)  # Time span for simulation
 
 Q = np.array([[ 1,         0,                 0,                  0],
@@ -76,7 +76,7 @@ x_prev=x_ac[:n, 0]
 flag=True
 t_span_ac=(0,0)
 
-explore=0.01
+explore=0.1
 while flag == True:
    
 
@@ -89,7 +89,7 @@ while flag == True:
         # u=  = np.atleast_1d(u)
 
         # x_prev = x
-        args_ac = (cart_pendulum_sim_lqr2, L, m_p, M_p, g, F, f, b, n , m, x_prev, u_prev, alpha_c, alpha_a, M, R, T)
+        args_ac = (cart_pendulum_sim_lqr2, L, m_p, M_p, g, F, f, b, n , m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore)
 
         t_span_ac = (t_span_ac[1], t_span_ac[1]+T)
         
