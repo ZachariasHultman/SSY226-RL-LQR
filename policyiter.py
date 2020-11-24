@@ -10,7 +10,7 @@ from collections import deque
 #gamma:Discount factor
 #k_1: nonzero constant
 #k_2: nonzero constant
-#q_i: q-function dependent on state x and policy (also dependent on x)
+#q_i: q-function dependent on state x and policy (policy also dependent on x)
 #R_tau: reward
 
 class IQPI:
@@ -28,15 +28,57 @@ class IQPI:
         self.tau=tau
         self.Z_tau=Z_tau
 
+    #def q_func0(self,states,u):
+        # u: input vector of dimension (nr_states,)
+        # states: Matrix of states where a row corresponds to time t (has dimension  nr_timeinstance x nr_states)
+
+       # Q = np.ones([states.shape[1], len(u)])
+
+
+    def q_learning(self,eps,states,policy,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t):
+        # policy: output of e.g epsilon greedy function
+        # states: Matrix of states where a row corresponds to time t (has dimension  nr_timeinstance x nr_states)
+
+        Q=np.ones([states.shape[1], len(policy)])  # state action value table
+        pi=np.zeros([states.shape[1]])  # greedy policy table
+        alpha=0.01
+        iter=100
+        saved_Q=[]
+        saved_pi=[]
+
+        for i in range(iter):
+            for s,time in enumerate(states): #s: row in states
+                for s_elem in s: # s_elem: element in s
+                    update = np.zeros([states.shape[1], len(policy)]) #for initializing while loop
+                    a=0 #same here
+                    while np.linalg.norm(Q[s_elem, a])-np.linalg.norm(update)>np.linalg.norm(0.01):
+                        pol = eps_greedy_policy(Q[s_elem], eps)
+                        a = np.random.choice(len(pol), p=pol)
+                        time_next=time+1 #states in next time instance
+                        if time_next<=len(states):
+                            integrand=self.to_integrate(beta,tau,curr_t,Z_tau)
+                            update=self.eval(k_1,k_2,gamma,beta,R_tau,q_i_xu,q_i_xPi,q_i_xPi_next,curr_t,next_t,integrand)[0]
+                            #update=Q[s_elem, a] + alpha * (r + gamma * np.max(Q[time_next]) - Q[s_elem, a])
+                            Q[s_elem, a] = update
+                        else:
+                            integrand = self.to_integrate(beta, tau, curr_t, Z_tau)
+                            update = self.eval(k_1, k_2, gamma, beta, R_tau, q_i, curr_t, curr_t, integrand)[0]
+                            #update = Q[s_elem, a] + alpha * (r + gamma * np.max(Q[len(states)]) - Q[s_elem, a])
+                            Q[s_elem, a] = update
+                    pi[s_elem]=self.improv(q_i)
+                    saved_Q.append(Q[s_elem,a])
+                    saved_pi.append(pi[s_elem])
+        return Q, pi
+
     def to_integrate(self,beta,tau,curr_t,Z_tau):
         self.integrand = beta ** (tau - curr_t) * Z_tau
         return self.integrand       #+ self.beta * self.q_i
        #return self.beta * self.Z_tau + self.beta*self.q_i
 
-    def eval(self,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand):
+    def eval(self,k_1,k_2,gamma,beta,R_tau,q_i_xu,q_i_xPi,q_i_xPi_next,curr_t,next_t,integrand):
         self.k_3 = k_2 - np.log(gamma**(-1) * beta)
-        self.Z_tau = k_1 * R_tau - k_2 * q_i + self.k_3 * q_i
-        self.q_i=integrate.quad(integrand,curr_t,next_t, args=(self.Z_tau,curr_t))+beta * q_i
+        self.Z_tau = k_1 * R_tau - k_2 * q_i_xu + self.k_3 * q_i_xPi
+        self.q_i=integrate.quad(integrand,curr_t,next_t, args=(self.Z_tau,curr_t))+beta * q_i_xPi_next
         return self.q_i, self.Z_tau, self.k_3
 
     def improv(self,q_i):
@@ -46,7 +88,7 @@ class IQPI:
 # testing algorithm below
 
 def eps_greedy_policy(q_values, eps):
-    probs=np.ones([len(q_values)])*eps/len(q_values)
+    probs=np.ones(q_values.shape)*eps/len(q_values)
     best_a=np.argmax(q_values)
     probs[best_a]+=(1-eps)
     policy=probs
@@ -143,7 +185,6 @@ x1dot,x2dot,x3dot,x4dot=cart_pendulum_sim(t , x, L=1., m=1., M = 1., g=9.81, F=0
 eps=0.1
 q_values=np.ones([4,2])
 curr_policy=eps_greedy_policy(q_values,eps)
-print('curr_pol',curr_policy)
 beta=0.7
 mu=curr_policy
 gamma=1
@@ -163,7 +204,7 @@ if k_1>0 and k_2>0:
     policy_iter=IQPI(curr_policy,beta,mu,gamma,k_1,k_2,curr_t,next_t,q_i,R_tau,tau,Z_tau) #is working
     #print(policy_iter.improv())
     integrand=policy_iter.to_integrate(beta,tau,curr_t,Z_tau)
-    eval_pol=policy_iter.eval(k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand) #def eval(self,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand):
+    eval_pol=policy_iter.eval(k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t,integrand)
     improv_pol=policy_iter.improv(q_i)
 #Improving policy until it becomes optimal
     while policy_iter.curr_policy!=all(improv_pol):
