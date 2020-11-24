@@ -28,26 +28,23 @@ class IQPI:
         self.tau=tau
         self.Z_tau=Z_tau
 
-    #def q_func0(self,states,u):
-        # u: input vector of dimension (nr_states,)
-        # states: Matrix of states where a row corresponds to time t (has dimension  nr_timeinstance x nr_states)
-
-       # Q = np.ones([states.shape[1], len(u)])
 
 
-    def q_learning(self,eps,states,policy,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t):
+    def q_learning(self,eps,states,policy,u,k_1,k_2,gamma,beta,R_tau,q_i,curr_t,next_t):
         # policy: output of e.g epsilon greedy function
         # states: Matrix of states where a row corresponds to time t (has dimension  nr_timeinstance x nr_states)
+        # u: vector of inputs (has dimension nr_states x 1)
 
         Q=np.ones([states.shape[1], len(policy)])  # state action value table
         pi=np.zeros([states.shape[1]])  # greedy policy table
-        alpha=0.01
+        #alpha=0.01
         iter=100
         saved_Q=[]
         saved_pi=[]
+        condition=False
 
         for i in range(iter):
-            for s,time in enumerate(states): #s: row in states
+            for time,s in enumerate(states): #s: row in states
                 for s_elem in s: # s_elem: element in s
                     update = np.zeros([states.shape[1], len(policy)]) #for initializing while loop
                     a=0 #same here
@@ -57,13 +54,18 @@ class IQPI:
                         time_next=time+1 #states in next time instance
                         if time_next<=len(states):
                             integrand=self.to_integrate(beta,tau,curr_t,Z_tau)
+                            q_i_xu=Q[s_elem,u[s_elem]]
+                            q_i_xPi=Q[s_elem,a]
+                            if condition:
+                                q_i_xPi_next=update
+                            else:
+                                q_i_xPi_next=1 #intializing
+                                condition=True
                             update=self.eval(k_1,k_2,gamma,beta,R_tau,q_i_xu,q_i_xPi,q_i_xPi_next,curr_t,next_t,integrand)[0]
-                            #update=Q[s_elem, a] + alpha * (r + gamma * np.max(Q[time_next]) - Q[s_elem, a])
                             Q[s_elem, a] = update
                         else:
                             integrand = self.to_integrate(beta, tau, curr_t, Z_tau)
                             update = self.eval(k_1, k_2, gamma, beta, R_tau, q_i, curr_t, curr_t, integrand)[0]
-                            #update = Q[s_elem, a] + alpha * (r + gamma * np.max(Q[len(states)]) - Q[s_elem, a])
                             Q[s_elem, a] = update
                     pi[s_elem]=self.improv(q_i)
                     saved_Q.append(Q[s_elem,a])
