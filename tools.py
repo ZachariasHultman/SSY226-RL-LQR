@@ -4,6 +4,21 @@ import matplotlib.pyplot as plt
 import control as ctrl
 
 
+def double_integrator_lin_lqr_gain(Q, R):
+
+    A = np.array([[0, -1],
+                 [0, -0.1]])
+
+    B = np.array([0, 1]).T
+    B = np.expand_dims(B, axis=1)
+
+    K, S, E = ctrl.lqr(A, B, Q, R)
+
+    K = np.array([K[0, 0], K[0, 1]])
+
+    return K
+
+
 def cart_pendulum_lin_lqr_gain(L, m, M, g, f, b, Q, R):
     """
     Function that calculates the lqr gain K for a linerized cart pendulum around theta=0.
