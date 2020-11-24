@@ -63,7 +63,7 @@ def sigma_fun(U_curr,U_prev):
     """
 
     sigma_pt1=np.kron(U_curr,U_curr)
-    sigma_pt2=np.kron(U_curr,U_curr)
+    sigma_pt2=np.kron(U_prev,U_prev)
     sigma=np.kron(sigma_pt1,sigma_pt2)
     return sigma
 
