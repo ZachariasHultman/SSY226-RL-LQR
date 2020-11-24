@@ -6,10 +6,11 @@ import control as ctrl
 
 def double_integrator_lin_lqr_gain(Q, R):
 
-    A = np.array([0, -1],
-                 [0, -0.1])
+    A = np.array([[0, -1],
+                 [0, -0.1]])
 
     B = np.array([0, 1]).T
+    B = np.expand_dims(B, axis=1)
 
     K, S, E = ctrl.lqr(A, B, Q, R)
 

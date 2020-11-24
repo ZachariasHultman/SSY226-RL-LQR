@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import critic
 import actor
 
-def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore):
-    
+#def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore):
+def func(t,y,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore):
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x = np.expand_dims(y[:n], 1)
     W_a_hat = y[n:n+n]
@@ -17,7 +17,7 @@ def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_
     
     u = np.atleast_2d(u)
     # print(u)
-    x_dot = sysfunc(x, u, L, m_p, M_p, g, f, b)
+    x_dot = sysfunc(x, u)
     
     W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
     W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
@@ -31,12 +31,25 @@ def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_
 
     return states
 
-def double_integrator_with_friction(t, x, u)
+
+def double_integrator_with_friction2(x, u):
 
     x1, x2 = x
 
     x_1_dot = -x2
-    x_2_dot = -0.1*x3 + u
+    x_2_dot = -0.1*x2 + u
+
+    return [x_1_dot, x_2_dot]
+
+
+def double_integrator_with_friction(t, x, K):
+
+    x1, x2 = x
+
+    u = -np.matmul(K, x)
+
+    x_1_dot = -x2
+    x_2_dot = -0.1*x2 + u
 
 
     return [x_1_dot, x_2_dot]
