@@ -62,11 +62,7 @@ def eps_func(Q, Qscore, c, zeta, b, a, theta, M, R, x, phi, n, m):
 
 def diff_theta(zeta, b, a, theta):
     dtheta_pt1 = (np.matmul(zeta.T, theta) + b)
-    print("Shape of b:", b.shape)
-    print("The shape is:",np.matmul(zeta.T, theta).shape)
-    print("dtheta_pt1 shape:", dtheta_pt1.shape)
-    print("Zeta shape:", zeta.shape)
-    dtheta = -a * np.matmul(dtheta_pt1, zeta)
+    dtheta = -a * dtheta_pt1*zeta
     return dtheta
 
 def compute_u(Ke, x, t):
@@ -79,6 +75,7 @@ def compute_u(Ke, x, t):
         zeta_t += a[i]*np.sin(freq[i]*t + phase[i])
 
     u = np.matmul(Ke,x) + zeta_t
+    # u = u.reshape(1,1)#np.atleast_1d(u)
 
     return u
 
@@ -107,7 +104,8 @@ Ke = np.array([-1, -2])
 #Initialize states, input and parameters
 # Start the simulation time (we can look for better place)
 start = time.time()
-t = np.copy(start)
+t = 0
+t_prev = 0
 #Define initial states and inputs
 x = np.array([0.0, 0.0])
 u = compute_u(Ke, x, t)
@@ -123,9 +121,10 @@ phi = np.atleast_1d(phi)
 size_theta = np.size(kronecker(U, U, m, n))   #Just used for gettin size for theta
 
 theta = np.zeros(size_theta)
-theta = theta.reshape(6,1)
+theta = theta.reshape(size_theta,1)
 dtheta = np.ones(size_theta)
-dtheta = dtheta.reshape(6,1)
+dtheta = dtheta.reshape(size_theta,1)
+d_prev = 0
 
 theta_record = []
 phi_record = []
@@ -137,12 +136,15 @@ tol = 1e-3
 
 ###---Start the loop here:
 while (np.linalg.norm(dtheta)> tol):
+    #Time delay need otherwise execution happens in same time instance
+    time.sleep(0.1)
 
     # dtheta = np.copy(theta)
     N += 1
 
     c = cost_func(x,u,M,R)
     d = cost_func(x,u,M,R)
+    x = x.squeeze()
     U1 = np.concatenate((x,u))  # U with u
     U2 = np.concatenate((x,phi))  # U with phi
     Si = kronecker(U1, U1, m, n)
@@ -160,16 +162,17 @@ while (np.linalg.norm(dtheta)> tol):
     zeta = zeta_pt1 - zeta_pt2 + zeta_pt3
 
     #Define b(t):
+    # print("start time", start, time.time())
+    t = time.time() - start
+
     dphi = cost_func(x,phi,M,R)
     dphi = np.atleast_1d(dphi).reshape(1,1)
-    ddf = diff_d(x,phi,M,R).reshape(2,1)
+    ddf = (d-d_prev)/(t - t_prev)#diff_d(x,phi,M,R).reshape(2,1)
+    ddf = np.atleast_1d(ddf)
+    b = c - d + dphi + ddf #diff_d(x,phi,M,R)
+    b = b.squeeze()
+    b = np.atleast_1d(b)
 
-    print(ddf)
-    print("Shape of c:", ddf.shape)
-    b = c - d + dphi + diff_d(x,phi,M,R)
-    print("b:", b)
-
-    t = time.time() - start
     a = g/(t+1)
     dtheta = diff_theta(zeta, b, a, theta)
 
@@ -185,9 +188,11 @@ while (np.linalg.norm(dtheta)> tol):
     time_record.append(t)
 
     u = compute_u(Ke, x, t)
-    x = np.matmul(A, x) + np.matmul(B, u)
+    x = np.matmul(A, x).reshape(2,1) + np.matmul(B.reshape(2,1), u.reshape(1,1))
+    # print("done")
+    print("N:",N)
 
-print("N:",N)
+
 ##====End of while loop
 
 #Plot functions:
