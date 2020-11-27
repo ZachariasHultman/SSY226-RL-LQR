@@ -6,7 +6,7 @@ import control as ctrl
 
 def norm_error(true_value, approx_value):
 
-    e = 1/np.linalg.norm(true_value, ord=2)*np.linalg.norm(true_value-approx_value, ord=2)
+    e = 1/np.linalg.norm(true_value, ord=2)*np.linalg.norm(approx_value-true_value, ord=2)
 
     return e
 

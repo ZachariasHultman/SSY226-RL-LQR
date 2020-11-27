@@ -9,7 +9,7 @@ from dynamic_system_simulation import func, double_integrator_with_friction, dou
 from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error
 from AnimationFunction import animationfunction
 
-t_span =[0, 5]  # Time span for simulation
+t_span =[0, 4]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],500)  # Time span for simulation
 
 # M_p = 0.5  # cart mass
@@ -57,14 +57,21 @@ T = 0.05  # delta t [s]
 t_eval = np.linspace(t_span[0], t_span[1], int(1/T))
 x_ac = np.ones(shape=(n+n+s+s, 1))
 x_ac[:n, 0] = x_init_double_int
+K =[-1, 0]
+x_ac[n:n+n*m,0]=K
 
 t_ac = np.ndarray(shape=(1))
 error_K_ac=np.ndarray(shape=(1))
 
-alpha_c = 10
-alpha_a = 2
+Q_xu=np.atleast_2d(R)
+delta=1
+alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))))*(2*np.min(np.linalg.eigvals(M+np.matmul(Q_xu,np.matmul(np.linalg.inv(np.atleast_2d(R)),Q_xu.T))))-np.max(np.linalg.eig(np.matmul(Q_xu,Q_xu.T))))
+print(alpha_a_upper)
+
+alpha_c = 400
+alpha_a = 5
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
-K = np.array([-1, 0])
+
 # M = np.identity(n)
 # R = np.identity(m)
 
@@ -78,15 +85,23 @@ flag=True
 errorFlag=False
 t_span_ac=(0, 0)
 
-explore=0.6
+explore=0.1
 
 
 t_prev=0
 
 while t_span_ac[1]<=t_span[1]:
   # print(u_prev)
-  if t_span_ac[1]>= 2:
-    explore=0
+  if t_span_ac[1]>= 1:
+    explore=explore - explore/100
+    # alpha_a=alpha_a - alpha_a/100
+    # alpha_c=alpha_c-alpha_c/100
+    # # if alpha_a <=0:
+    #   alpha_a=0
+    # if alpha_c <=0:
+    #   alpha_c=0
+    # if explore <= 0:
+    #   explore=0
  
   args_ac = (double_integrator_with_friction2, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T, explore)
 
@@ -105,18 +120,16 @@ while t_span_ac[1]<=t_span[1]:
   # print(u)
   K_N = vals_ac.y[n:n+n, -1]
   # Save time and state values
-  print(K_N)
+  print('K_N',K_N)
   x_ac = np.concatenate((x_ac, vals_ac.y), axis=1)
   t_ac = np.concatenate((t_ac, vals_ac.t), axis=0)
   e = norm_error(K_lqr, K_N)
  
   error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
-  print(t_span_ac[1])
-  print(x_ac[:n, -1])
+  print('time',t_span_ac[1])
+  print('states',x_ac[:n, -1])
+  print('error', e)
 
-# warnings.filterwarnings("ignore")
-
-       
 
 #ani_vals = x_ac[:4]
 #animationfunction(ani_vals, t_ac ,L)
@@ -126,8 +139,6 @@ plt.figure()
 plt.subplot(311)
 plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='x1')
 plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='x2')
-#plt.plot(vals_lqr.t,vals_lqr.y[2:3].T,label='theta')
-#plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
 plt.legend(loc="upper left")
 
 
@@ -135,16 +146,11 @@ plt.legend(loc="upper left")
 plt.subplot(312)
 plt.plot(t_ac,x_ac[:1].T,label='x1')
 plt.plot(t_ac,x_ac[1:2].T,label='x2')
-#plt.plot(t_ac,x_ac[2:3].T,label='theta')
-#plt.plot(t_ac,x_ac[3:4].T,label='theta_dot')
 plt.legend(loc="upper left")
 
 # Plotting error of k
 plt.subplot(313)
 plt.plot(error_K_ac,label='k_error')
-
-#plt.plot(t_ac,x_ac[2:3].T,label='theta')
-#plt.plot(t_ac,x_ac[3:4].T,label='theta_dot')
 plt.legend(loc="upper left")
 plt.show()
 
