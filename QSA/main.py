@@ -162,12 +162,13 @@ while (np.linalg.norm(dtheta)> tol):
     zeta = zeta_pt1 - zeta_pt2 + zeta_pt3
 
     #Define b(t):
-    # print("start time", start, time.time())
     t = time.time() - start
 
     dphi = cost_func(x,phi,M,R)
     dphi = np.atleast_1d(dphi).reshape(1,1)
     ddf = (d-d_prev)/(t - t_prev)#diff_d(x,phi,M,R).reshape(2,1)
+    d_prev = d
+    t_prev = t
     ddf = np.atleast_1d(ddf)
     b = c - d + dphi + ddf #diff_d(x,phi,M,R)
     b = b.squeeze()
@@ -175,10 +176,11 @@ while (np.linalg.norm(dtheta)> tol):
 
     a = g/(t+1)
     dtheta = diff_theta(zeta, b, a, theta)
+    # print(dtheta)
 
 
     #Update theta
-    theta = theta + dtheta
+    theta = theta - dtheta
     theta_record.append(theta)
 
     #Implement eq 22:
@@ -189,7 +191,6 @@ while (np.linalg.norm(dtheta)> tol):
 
     u = compute_u(Ke, x, t)
     x = np.matmul(A, x).reshape(2,1) + np.matmul(B.reshape(2,1), u.reshape(1,1))
-    # print("done")
     print("N:",N)
 
 
