@@ -48,12 +48,12 @@ print(K)
 vals_lqr = integrate.solve_ivp(double_integrator_with_friction, t_span, x_init_double_int, t_eval=t_eval, args=args)
 
 # Plotting controlled linear system
-# plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='x1')
-# plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='x2')
-# #plt.plot(vals_lqr.t,vals_lqr.y[2:3].T,label='theta')
-# #plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
-# plt.legend(loc="upper left")
-# plt.show()
+plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='x1')
+plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='x2')
+#plt.plot(vals_lqr.t,vals_lqr.y[2:3].T,label='theta')
+#plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
+plt.legend(loc="upper left")
+plt.show()
 
 # Simulation with Actor-Critic
 n = 2
@@ -66,8 +66,8 @@ x_ac[:n, 0] = x_init_double_int
 
 t_ac = np.ndarray(shape=(1))
 
-alpha_c = 200
-alpha_a = 34
+alpha_c = 50
+alpha_a = 2
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 K = np.array([-1, 0])
 # M = np.identity(n)
@@ -82,7 +82,8 @@ flag=True
 errorFlag=False
 t_span_ac=(0, 0)
 
-explore=0.4
+explore=0.3
+
 
 t_prev=0
 
