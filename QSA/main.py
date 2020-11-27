@@ -41,6 +41,7 @@ def diff_Si(U, n, m):
     return d
 
 def diff_d(x,u,M,R):
+    print("Mx",np.matmul(R,u))
     diff_d = 2*np.matmul(M,x) + 2* np.matmul(R,u)
     return diff_d
 
@@ -61,6 +62,10 @@ def eps_func(Q, Qscore, c, zeta, b, a, theta, M, R, x, phi, n, m):
 
 def diff_theta(zeta, b, a, theta):
     dtheta_pt1 = (np.matmul(zeta.T, theta) + b)
+    print("Shape of b:", b.shape)
+    print("The shape is:",np.matmul(zeta.T, theta).shape)
+    print("dtheta_pt1 shape:", dtheta_pt1.shape)
+    print("Zeta shape:", zeta.shape)
     dtheta = -a * np.matmul(dtheta_pt1, zeta)
     return dtheta
 
@@ -76,60 +81,6 @@ def compute_u(Ke, x, t):
     u = np.matmul(Ke,x) + zeta_t
 
     return u
-
-# # Start the simulation time (we can look for better place)
-# start = time.time()
-# t = np.copy(start)
-# #Define initial states and inputs
-# x = np.array([0, 0])
-# u = compute_u(Ke, x, t)
-#
-# U = np.concatenate(x, u)
-#
-# n = np.size(x)  #Sates size
-# m = np.size(u)  #Input size
-# #Define c(x,u):
-#
-# c = cost_func(x,u,M,R)
-# d = cost_func(x,u,M,R)
-#
-# #Define Si: #kronecker(A,B,n,m)
-# Si = kronecker(U, U, m, n)
-#
-# #Define phi: = K*x
-# phi = np.matmul(K,x)
-#
-# #Define optimization parameter, Q-functions
-# theta = np.zeros(np.size(Si))
-# dtheta = np.ones(np.size(Si))
-# Q = Q_func(x, u, theta, M, R, m, n)
-# Qscore = #Q_func(x, phi, theta, M, R, m, n)
-#
-# #Eq 21:
-# Eps = eps_func(Q, Qscore, c, zeta, b, a, theta, M, R, x, phi, n, m)
-#
-# #Eq 22:
-# phi = np.argmin(Q, axis = 1)
-#
-# #Eq 23:
-# Q = d + np.matmul(theta.T,Si)
-#
-# #Define eq 24:
-# #Define zeta:
-# U1 = np.concatenate(x,phi)
-# zeta_pt1 = kronecker(U1, U1, n, m)
-# zeta_pt3 = diff_Si(U1, n, m)
-# zeta = zeta_pt1 - Si + zeta_pt3
-#
-# #Define b(t):
-# c = np.matmul(x.T,np.matmul(M,x)) + np.matmul(u.T,np.matmul(R,u))
-# d = np.copy(c)
-# dphi = np.matmul(x.T,np.matmul(M,x)) + np.matmul(phi.T,np.matmul(R,phi))
-# b = c - d + dphi + diff_d(x,phi,M,R)
-#
-# t = time.time() - start
-# a = g/(t+1)
-# dtheta = theta_func(zeta, b, a, theta)
 
 #####============STRUCTURE OF CODE==============
 """"
@@ -172,7 +123,9 @@ phi = np.atleast_1d(phi)
 size_theta = np.size(kronecker(U, U, m, n))   #Just used for gettin size for theta
 
 theta = np.zeros(size_theta)
+theta = theta.reshape(6,1)
 dtheta = np.ones(size_theta)
+dtheta = dtheta.reshape(6,1)
 
 theta_record = []
 phi_record = []
@@ -203,20 +156,21 @@ while (np.linalg.norm(dtheta)> tol):
     zeta_pt1 = kronecker(U2, U2, m, n)
     zeta_pt2 = kronecker(U1, U1, m, n)
     zeta_pt3 = diff_Si(U2, m, n)
-    # zeta_pt3 = np.atleast_1d(zeta_pt3)
-    print("part 1: ", np.shape(zeta_pt1))
-    print("part 2: ", np.shape(zeta_pt2))
-    print("part 3: ", np.shape(zeta_pt3))
+    zeta_pt3 = zeta_pt3.reshape([np.size(zeta_pt1), 1])
     zeta = zeta_pt1 - zeta_pt2 + zeta_pt3
 
     #Define b(t):
     dphi = cost_func(x,phi,M,R)
+    dphi = np.atleast_1d(dphi).reshape(1,1)
+    ddf = diff_d(x,phi,M,R).reshape(2,1)
+
+    print(ddf)
+    print("Shape of c:", ddf.shape)
     b = c - d + dphi + diff_d(x,phi,M,R)
+    print("b:", b)
 
     t = time.time() - start
     a = g/(t+1)
-    print(np.shape(zeta))
-    print(np.shape(theta))
     dtheta = diff_theta(zeta, b, a, theta)
 
 
