@@ -4,6 +4,13 @@ import matplotlib.pyplot as plt
 import control as ctrl
 
 
+def norm_error(true_value, approx_value):
+
+    e = 1/np.linalg.norm(true_value, ord=2)*np.linalg.norm(true_value-approx_value, ord=2)
+
+    return e
+
+
 def double_integrator_lin_lqr_gain(Q, R):
 
     A = np.array([[0, -1],
