@@ -1,6 +1,6 @@
 import numpy as np
 from tools import kronecker
-from tools import vech_to_mat_sym, vech_to_mat
+from tools import vech_to_mat_sym, vech_to_mat, sigma_fun
 # equation 20 is the following function
 
 
@@ -36,7 +36,7 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n 
 
     # Update of the critic approximation weights (Equation 20)
 
-
+    # print((1 + np.matmul(sigma.T, sigma))**2)
     W_c_hat_dot = -alpha_c * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
     W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
     Q_bar_tilde = vech_to_mat_sym(W_c_tilde, n + m)
@@ -63,17 +63,3 @@ def Q_xu(n,m,W_hat):
     q_xu = vech_to_mat(q_vec, n, m)
     return q_xu
 
-def sigma_fun(U_curr, U_prev, n, m):
-    """
-    Help function to calculate sigma in critic weights equation
-    Parameters: U_curr, which is [states; control signal] ([x;u]) concatinated at the current time step. array_like. Size NxM
-                U_prev, which is [states; control signal] ([x;u]) concatinated at the previous time step. array_like Size NxM
-
-    Out: sigma, array like. Size N^2xM^2
-    """
-
-    sigma_pt1 = kronecker(U_curr, U_curr, n, m)
-    sigma_pt2 = kronecker(U_prev, U_prev, n, m)
-
-    sigma = sigma_pt1 - sigma_pt2
-    return sigma

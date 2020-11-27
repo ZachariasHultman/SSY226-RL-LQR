@@ -13,7 +13,7 @@ def func(t,y,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore):
     W_c_hat = y[n+n:n+n+s]
     W_c_tilde = y[n+n+s:]
 
-    u = np.matmul(W_a_hat.T, x)+np.random.normal(0, explore, m)
+    u = np.matmul(W_a_hat, x)+np.random.normal(0, explore, m)
     
     u = np.atleast_2d(u)
     # print(u)
