@@ -15,9 +15,9 @@ def func(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u)
     
     u = np.atleast_2d(u)
 
-    print("u :", u)
+    # print("u :", u)
     x_dot = sysfunc(x, u)
-    print("x_dot:", x_dot)
+    # print("x_dot:", x_dot)
     W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
     W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
 

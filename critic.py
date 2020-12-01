@@ -6,16 +6,16 @@ from tools import vech_to_mat_sym, vech_to_mat, sigma_fun
 
 def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m):
 
-    u = np.atleast_2d(u)
-    x = np.atleast_2d(x)
-    print("x",x.shape)
-    print("u",u.shape)
-    print("u_prev", u_prev.shape)
-    print("x_prev", x_prev.shape)
-    U = np.concatenate((x.T, u.T))
+    # u = np.atleast_2d(u)
+    # x = np.atleast_2d(x)
+    # print("x",x.shape)
+    # print("u",u.shape)
+    # print("u_prev", u_prev.shape)
+    # print("x_prev", x_prev.shape)
+    U = np.concatenate((x.T, u.T),1).T
 
-    U_prev = np.concatenate((x_prev.T, u_prev.T))
-    print('INTERNAL U',U)
+    U_prev = np.concatenate((x_prev.T, u_prev.T),1).T
+    # print('INTERNAL U',U)
 
 
     # print('INTERNAL U_PREV',U_prev)
@@ -40,7 +40,7 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n 
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
     e = np.matmul(W_c_hat.T, kronecker(U, U,n,m)) + int_term - np.matmul(W_c_hat.T, kronecker(U_prev, U_prev,n,m))
     
-
+    
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
