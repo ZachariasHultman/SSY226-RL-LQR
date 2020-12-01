@@ -4,18 +4,19 @@ from tools import vech_to_mat_sym, vech_to_mat, sigma_fun
 # equation 20 is the following function
 
 
-def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m):
-
+def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m,flag):
+    print(flag)
 
     U = np.concatenate((x.T, u.T), 1).T
 
-
     U_prev = np.concatenate((x_prev.T, u_prev.T)).T
+    print('INTERNAL U',U)
+
+    if not flag:
+        print('INTERNAL U_PREV',U_prev)
+        flag=True
 
     sigma = sigma_fun(U, U_prev, n, m)
-
-    # while error > tol:
-
 
     # Compute new Weights
     # See equation below (e=...) to understand the need of the integral term.
@@ -32,17 +33,23 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n 
 
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
     e = np.matmul(W_c_hat.T, kronecker(U, U,n,m)) + int_term - np.matmul(W_c_hat.T, kronecker(U_prev, U_prev,n,m))
-
+    
 
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
     W_c_hat_dot = -alpha_c * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
+    # print('INTERNAL SIGMA**2',np.matmul(sigma.T, sigma)) This gets really small
+
+
     W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
     Q_bar_tilde = vech_to_mat_sym(W_c_tilde, n + m)
     Q_xu_tilde = Q_bar_tilde[n:,:n].T
+    if flag:
+        U_prev=U
 
-   
+    print(flag)
+
     return W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde
 
 

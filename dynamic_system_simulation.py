@@ -5,24 +5,22 @@ import critic
 import actor
 
 #def func(t,y,sysfunc, L, m_p, M_p, g, F, f,b,n,m,x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore):
-def func(t,y,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore):
+def func(t,y,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u):
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x = np.expand_dims(y[:n], 1)
-    W_a_hat = y[n:n+n]
+    W_a_hat = y[n:n+n*m]
  
-    W_c_hat = y[n+n:n+n+s]
-    W_c_tilde = y[n+n+s:]
-
-    u = np.matmul(W_a_hat, x)+np.random.normal(0, explore, m)
+    W_c_hat = y[n+n*m:n+n*m+s]
+    W_c_tilde = y[n+n*m+s:]
     
     u = np.atleast_2d(u)
     # print(u)
     x_dot = sysfunc(x, u)
-    
-    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
-    W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
 
-    
+    flag=False
+    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m,flag)
+    W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
+    flag=True
     states = x_dot
     states += [s for s in W_a_hat_dot]
     states += [s for s in W_c_hat_dot]

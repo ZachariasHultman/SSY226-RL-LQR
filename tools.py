@@ -5,8 +5,8 @@ import control as ctrl
 
 
 def norm_error(true_value, approx_value):
-
-    e = 1/np.linalg.norm(true_value, ord=2)*np.linalg.norm(true_value-approx_value, ord=2)
+    
+    e = 1/np.linalg.norm(true_value)*np.linalg.norm(approx_value-true_value)
 
     return e
 
@@ -19,11 +19,11 @@ def double_integrator_lin_lqr_gain(Q, R):
     B = np.array([0, 1]).T
     B = np.expand_dims(B, axis=1)
 
-    K, S, E = ctrl.lqr(A, B, Q, R)
+    K, P, E = ctrl.lqr(A, B, Q, R)
 
     K = np.array([K[0, 0], K[0, 1]])
 
-    return K
+    return K, P
 
 
 def cart_pendulum_lin_lqr_gain(L, m, M, g, f, b, Q, R):
@@ -134,10 +134,34 @@ def vech_to_mat(a, n, m):
     """
 
     A = np.ndarray((n, m))
-    print(a)
-    print(n)
-    print(m)
     for j in range(m):
         for i in range(n):
             A[i, j] = a[i+n*j]
     return A
+
+
+def mat_to_vec_sym(A, n):
+    a = np.ndarray((int(n*(n+1)/2)))
+    A=np.atleast_2d(A)
+    c = 0
+    for j in range(n):
+        for i in range(j, n):
+
+            if i == j:
+                a[c] = A[i, j]
+            else:
+                a[c] = A[i, j] * 2
+            c += 1
+    return a
+
+
+def mat_to_vec(A, n, m):
+
+    a = np.ndarray(n*m)
+    c = 0
+    for j in range(m):
+        for i in range(n):
+            a[c] = A[i, j]
+            c += 1
+
+    return a
