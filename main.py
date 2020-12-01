@@ -78,10 +78,10 @@ alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))
 alpha_c = 200
 alpha_a = 34
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
-
-u=np.matmul(np.ones((n,m)).T,x_ac[:n, 0])
+k0= [-1, 0]
+u=np.matmul(k0, x_ac[:n, 0])
 u=np.atleast_1d(u)
-u_prev=0
+u_prev=u
 u_prev=np.atleast_1d(u_prev)
 
 x_prev=x_ac[:n, 0]
@@ -117,33 +117,30 @@ while t_span_ac[1]<=t_span[1]:
 
   t_span_ac = (t_span_ac[1], t_span_ac[1]+T)
 
-  #try:
-  vals_ac = integrate.solve_ivp(func, t_span_ac, x_ac[:,-1], args=args_ac,t_eval=t_span_ac)
-  #except :
-    #   print('RuntimeError is raised!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    #  errorFlag=True
-  print(u)
+  vals_ac, info = integrate.odeint(func, x_ac[:,-1], t_span_ac, args=args_ac, hmin=T, h0=T, mxstep=1, full_output=True)
+
   u_prev=u
 
   x_prev= x_ac[:n, -1]
-  u = np.matmul(vals_ac.y[n:n+n, -1], vals_ac.y[:n, -1]) + np.random.normal(0,np.abs(u)*explore,m)
+  u = np.matmul(vals_ac[-1][n:n+n], vals_ac[-1][:n]) + np.random.normal(0,np.abs(u)*explore,m)
   u=np.atleast_1d(u)
   # print(u)
-  K_N = vals_ac.y[n:n+n, -1]
+  K_N = vals_ac[-1][n:n+n]
   # Save time and state values
   print('K_N',K_N)
-  x_ac = np.concatenate((x_ac, vals_ac.y), axis=1)
-  t_ac = np.concatenate((t_ac, vals_ac.t), axis=0)
+
+  x_ac = np.concatenate((x_ac, np.atleast_2d(vals_ac[-1]).T), axis=1)
+  t_ac = np.concatenate((t_ac, info["tcur"]), axis=0)
   e = norm_error(K_lqr, K_N)
 
-  e_W_c=norm_error(W_c_opt,vals_ac.y[n+n*m:n+n*m+s,-1] )
+  e_W_c=norm_error(W_c_opt,vals_ac[-1,n+n*m:n+n*m+s] )
   error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
   error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
   print('time',t_span_ac[1])
   # print('states',x_ac[:n, -1])
   # print('error', e)
   print('W_c_error', e_W_c)
-  print('W_c' , vals_ac.y[n+n*m:n+n*m+s,-1])
+  print('W_c' , vals_ac.T[n+n*m:n+n*m+s,-1])
   print('W_c_opt',W_c_opt)
   
 

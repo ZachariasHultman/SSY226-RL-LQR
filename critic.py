@@ -4,17 +4,16 @@ from tools import vech_to_mat_sym, vech_to_mat, sigma_fun
 # equation 20 is the following function
 
 
-def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m,flag):
-    print(flag)
+def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m):
 
     U = np.concatenate((x.T, u.T), 1).T
 
     U_prev = np.concatenate((x_prev.T, u_prev.T)).T
     print('INTERNAL U',U)
 
-    if not flag:
-        print('INTERNAL U_PREV',U_prev)
-        flag=True
+
+    print('INTERNAL U_PREV',U_prev)
+
 
     sigma = sigma_fun(U, U_prev, n, m)
 
@@ -45,10 +44,6 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n 
     W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
     Q_bar_tilde = vech_to_mat_sym(W_c_tilde, n + m)
     Q_xu_tilde = Q_bar_tilde[n:,:n].T
-    if flag:
-        U_prev=U
-
-    print(flag)
 
     return W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde
 
