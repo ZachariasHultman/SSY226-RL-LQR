@@ -9,7 +9,7 @@ from dynamic_system_simulation import func, double_integrator_with_friction, dou
 from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec, mat_to_vec_sym
 from AnimationFunction import animationfunction
 
-T = 0.05  # delta t [s]
+T = 0.01  # delta t [s]
 t_span =[0, 4]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/T))  # Time span for simulation
 
@@ -79,10 +79,9 @@ alpha_c = 200
 alpha_a = 34
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 
-u=np.matmul(np.ones((n,m)).T,x_ac[:n, 0])
+u=np.matmul(K,x_ac[:n, 0])
 u=np.atleast_1d(u)
-u_prev=0
-u_prev=np.atleast_1d(u_prev)
+u_prev=u
 
 x_prev=x_ac[:n, 0]
 flag=True
@@ -115,10 +114,13 @@ while t_span_ac[1]<=t_span[1]:
  
   args_ac = (double_integrator_with_friction2, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T, explore,u)
 
-  t_span_ac = (t_span_ac[1], t_span_ac[1]+T)
-
+  t_span_ac = [t_span_ac[1], t_span_ac[1]+T]
+  print('TIME outside',np.arange(t_span_ac[0],t_span_ac[1],1))
   #try:
-  vals_ac = integrate.solve_ivp(func, t_span_ac, x_ac[:,-1], args=args_ac,t_eval=t_span_ac)
+  vals_ac = integrate.solve_ivp(func, t_span_ac, x_ac[:,-1],method='RK45',first_step=T, args=args_ac,t_eval=np.arange(t_span_ac[0],t_span_ac[1],1))
+  # vals_ac= scipy.integrate.RK45(double_integrator_with_friction2)
+  print("hej utanför")
+
   #except :
     #   print('RuntimeError is raised!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     #  errorFlag=True

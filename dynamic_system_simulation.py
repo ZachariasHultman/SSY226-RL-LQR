@@ -17,16 +17,23 @@ def func(t,y,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u)
     # print(u)
     x_dot = sysfunc(x, u)
 
-    flag=False
-    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m,flag)
+    # flag=False
+
+    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
     W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
-    flag=True
+    # flag=True
+
+    # if flag:
+    #     u_prev=u
+    #     x_prev=x
+
+    # print(flag)
     states = x_dot
     states += [s for s in W_a_hat_dot]
     states += [s for s in W_c_hat_dot]
     states += [s for s in W_c_tilde_dot]
 
-
+    print('TIME',t)
     return states
 
 
