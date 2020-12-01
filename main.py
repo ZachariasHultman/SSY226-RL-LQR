@@ -51,7 +51,6 @@ args = (K_lqr,)
 vals_lqr=integrate.odeint(double_integrator_with_friction_ODE, x_init_double_int,  t_eval, args=((K_lqr,)))
 # func, x_ac[:,-1], t_span_ac, args=args_ac, mxstep=1, full_output=True)
 
-
 # Simulation with Actor-Critic
 n = 2
 m = 1
@@ -111,8 +110,7 @@ while t_span_ac[1]<=t_span[1]:
     u=u+ np.random.normal(0, explore, m,)
 
     # print(u)
-    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x_curr, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R,
-                                                                  T, n, m)
+    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x_curr, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
     W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x_curr, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
 
     W_c_hat = W_c_hat_old + W_c_hat_dot * T
