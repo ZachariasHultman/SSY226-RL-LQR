@@ -68,10 +68,10 @@ def diff_theta(zeta, b, a, theta):
 def compute_u(Ke, x, t):
     q = 24 #Choosen in the paper as number of sinusoids
     zeta_t = 0
-    freq = np.random.choice(np.linspace(0,50),q)
-    phase = np.random.choice(np.linspace(0,50),q)
-    a = np.random.rand(q,1)
-    for i in range(q):
+    freq = np.random.choice(np.linspace(0, 50), q)    # Frequency (0-50 rad/s)
+    phase = np.random.choice(np.linspace(0, 1), q)    # Phase (0-1 rad)
+    a = np.random.rand(q,1)                           # Amplitude (0-1)
+    for i in range(q):      # Compute sinusoidal noise to be introduced with input
         zeta_t += a[i]*np.sin(freq[i]*t + phase[i])
 
     u = np.matmul(Ke,x) + zeta_t
@@ -129,6 +129,7 @@ d_prev = 0
 theta_record = []
 phi_record = []
 time_record = []
+Q_all = []
 
 theta_record.append(theta)
 time_record.append(t)
@@ -151,6 +152,7 @@ while (np.linalg.norm(dtheta)> tol):
 
     # Implement eq 23 first:
     Q = Q_func(d, Si, theta)
+    Q_all.append(Q)
 
     #Implement eq 24:
 
@@ -185,7 +187,13 @@ while (np.linalg.norm(dtheta)> tol):
 
     #Implement eq 22:
 
-    phi = np.argmin(Q, axis = 1)
+    # phi = np.argmin(Q, axis = 1)
+    # print("Arg is: ",np.argmin(Q_all, axis = 1))
+    # phi = Q_all[np.argmin(Q_all, axis = 1).squeeze()]
+    # phi = phi.squeeze()
+    phi = Q.squeeze()
+    phi = np.atleast_1d(phi)
+    print(phi)
     phi_record.append(phi)
     time_record.append(t)
 
