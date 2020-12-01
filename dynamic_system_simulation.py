@@ -9,14 +9,16 @@ def func(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u)
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x = np.expand_dims(y[:n], 1)
     W_a_hat = y[n:n+n*m]
-    print("t: "+str(t))
+    print("TIME: "+str(t))
     W_c_hat = y[n+n*m:n+n*m+s]
     W_c_tilde = y[n+n*m+s:]
     
     u = np.atleast_2d(u)
     # print(u)
-    x_dot = sysfunc(x, u)
+    # x_dot = sysfunc(x, u)
+    x_dot = sysfunc(x,0,u)
 
+    
     W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n, m)
     W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
 
@@ -25,11 +27,15 @@ def func(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u)
     states += [s for s in W_c_hat_dot]
     states += [s for s in W_c_tilde_dot]
 
-    print('TIME',t)
+    # print('INTERNAL STATES',states)
+    # u_prev=u
+    # x_prev=x
+    # print(u_prev)
+    # print(x_prev)
     return states
 
 
-def double_integrator_with_friction2(x, u):
+def double_integrator_with_friction2(t,x, u):
 
     x1, x2 = x
 
@@ -40,7 +46,16 @@ def double_integrator_with_friction2(x, u):
 
 
 def double_integrator_with_friction(t, x, K):
+    x1, x2 = x
+    u = -np.matmul(K, x)
 
+    x_1_dot = -x2
+    x_2_dot = -0.1*x2 + u
+
+
+    return [x_1_dot, x_2_dot]
+
+def double_integrator_with_friction_ODE(x,t,K):
     x1, x2 = x
 
     u = -np.matmul(K, x)
@@ -48,6 +63,15 @@ def double_integrator_with_friction(t, x, K):
     x_1_dot = -x2
     x_2_dot = -0.1*x2 + u
 
+
+    return [x_1_dot, x_2_dot]
+
+def double_integrator_with_friction2_ODE(x,t,u):
+
+    x1, x2 = x
+
+    x_1_dot = -x2
+    x_2_dot = -0.1*x2 + u
 
     return [x_1_dot, x_2_dot]
 

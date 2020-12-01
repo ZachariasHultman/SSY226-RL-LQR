@@ -5,13 +5,14 @@ import matplotlib.pyplot as plt
 import control as ctrl
 from dynamic_system_simulation import cart_pendulum_sim_lqr
 from dynamic_system_simulation import cart_pendulum_sim_lqr2
-from dynamic_system_simulation import func, double_integrator_with_friction, double_integrator_with_friction2, double_integrator_with_friction_ODE, double_integrator_with_friction2_ODE
+from dynamic_system_simulation import func, double_integrator_with_friction, double_integrator_with_friction2
 from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec, mat_to_vec_sym
 from AnimationFunction import animationfunction
 
-T = 0.1  # delta t [s]
+T = 0.01  # delta t [s]
 t_span =[0, 2]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/T))  # Time span for simulation
+
 # M_p = 0.5  # cart mass
 # m_p = 0.2  # pendulum mass
 # g = 9.81  # gravity
@@ -26,7 +27,7 @@ t_eval = np.linspace(t_span[0],t_span[1],int(1/T))  # Time span for simulation
 # M = np.array([[ 1,         0, 0,0],
 #             [ 0,         1,0,0],
 #             [ 0,         0,100,0,
-            # [ 0,         0,0,100]]])
+#             [ 0,         0,0,100]]])
 
 # R = 0.001
 
@@ -44,10 +45,9 @@ M = np.array([[ 1,         0],
 R = 10
 K_lqr, P = double_integrator_lin_lqr_gain(M, R)
 args = (K_lqr,)
-# print(K_lqr)
-# vals_lqr = integrate.solve_ivp(double_integrator_with_friction, t_span, x_init_double_int, t_eval=t_eval, args=args)
-vals_lqr=integrate.odeint(double_integrator_with_friction_ODE, x_init_double_int,  t_eval, args=((K_lqr,)))
-# func, x_ac[:,-1], t_span_ac, args=args_ac, mxstep=1, full_output=True)
+print(K_lqr)
+vals_lqr = integrate.solve_ivp(double_integrator_with_friction, t_span, x_init_double_int, t_eval=t_eval, args=args)
+
 
 
 # Simulation with Actor-Critic
@@ -72,24 +72,23 @@ Q_xu=np.matmul(P,B).T
 delta=1
 
 #ekv 28
-# alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))))*(2*np.min(np.linalg.eigvals(M+np.matmul(Q_xu,np.matmul(np.linalg.inv(np.atleast_2d(R)),Q_xu.T))))-np.max(np.linalg.eigvals(np.matmul(Q_xu,Q_xu.T))))
+alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))))*(2*np.min(np.linalg.eigvals(M+np.matmul(Q_xu,np.matmul(np.linalg.inv(np.atleast_2d(R)),Q_xu.T))))-np.max(np.linalg.eigvals(np.matmul(Q_xu,Q_xu.T))))
 # print(alpha_a_upper)
 
-alpha_c = 500
-alpha_a = 2
+alpha_c = 200
+alpha_a = 34
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
-k0= [-1, 0]
-u=np.matmul(k0, x_ac[:n, 0])
+
+u=np.matmul(K,x_ac[:n, 0])
 u=np.atleast_1d(u)
 u_prev=u
-u_prev=np.atleast_1d(u_prev)
 
 x_prev=x_ac[:n, 0]
 flag=True
 errorFlag=False
 t_span_ac=(0, 0)
 
-explore=100
+explore=20
 
 t_prev=0
 
@@ -99,12 +98,11 @@ W_c_opt=mat_to_vec_sym(Q_xx,n)
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec(Q_xu,n,m)))
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec_sym(Q_uu,m)))
 
-t_tmp=0.0001
 
 while t_span_ac[1]<=t_span[1]:
   # print(u_prev)
   # if t_span_ac[1]>= 1:
-    # explore=0
+    # explore=explore - explore/100
     # alpha_a=alpha_a - alpha_a/100
     # alpha_c=alpha_c-alpha_c/100
     # # if alpha_a <=0:
@@ -114,40 +112,41 @@ while t_span_ac[1]<=t_span[1]:
     # if explore <= 0:
     #   explore=0
  
-  args_ac = (double_integrator_with_friction2_ODE, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T, explore,u)
+  args_ac = (double_integrator_with_friction2, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T, explore,u)
 
-  # t_span_ac = (t_span_ac[1], t_span_ac[1]+t_tmp)
+  t_span_ac = [t_span_ac[1], t_span_ac[1]+T]
+  print('TIME outside',np.arange(t_span_ac[0],t_span_ac[1],1))
+  #try:
+  vals_ac = integrate.solve_ivp(func, t_span_ac, x_ac[:,-1], args=args_ac,t_eval=np.arange(t_span_ac[0],t_span_ac[1],1))
+  # vals_ac= scipy.integrate.RK45(double_integrator_with_friction2)
+  print("hej utanför")
 
-  t_span_ac = (t_span_ac[1], t_span_ac[1]+T)
-
-  vals_ac, info = integrate.odeint(func, x_ac[:,-1], np.linspace(t_span_ac[0],t_span_ac[1],1), args=args_ac, mxstep=2, full_output=True)
-  # print('VALS_AC',vals_ac)
+  #except :
+    #   print('RuntimeError is raised!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    #  errorFlag=True
+  print(u)
   u_prev=u
 
-  x_prev= vals_ac[:n, -1].T
-  u = np.matmul(vals_ac[-1][n:n+n], vals_ac[-1][:n]) + np.random.normal(0,explore,m)
+  x_prev= x_ac[:n, -1]
+  u = np.matmul(vals_ac.y[n:n+n, -1], vals_ac.y[:n, -1]) + np.random.normal(0,np.abs(u)*explore,m)
   u=np.atleast_1d(u)
-  # print(info["tcur"])
-  K_N = vals_ac[-1][n:n+n]
+  # print(u)
+  K_N = vals_ac.y[n:n+n, -1]
   # Save time and state values
-  # print('K_N',K_N)
-
-  x_ac = np.concatenate((x_ac, np.atleast_2d(vals_ac[-1]).T), axis=1)
-  t_ac = np.concatenate((t_ac, info["tcur"]) , axis=0)
-  # print('TCUR', info["tcur"][-1])
-  # t_tmp=t_ac[-1]-t_ac[-2]
-  # print(t_tmp)
+  print('K_N',K_N)
+  x_ac = np.concatenate((x_ac, vals_ac.y), axis=1)
+  t_ac = np.concatenate((t_ac, vals_ac.t), axis=0)
   e = norm_error(K_lqr, K_N)
 
-  e_W_c=norm_error(W_c_opt,vals_ac[-1,n+n*m:n+n*m+s] )
+  e_W_c=norm_error(W_c_opt,vals_ac.y[n+n*m:n+n*m+s,-1] )
   error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
   error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
-  # print('time',t_span_ac[1])
-  print('states',x_ac[:n, -1])
+  print('time',t_span_ac[1])
+  # print('states',x_ac[:n, -1])
   # print('error', e)
-  # print('W_c_error', e_W_c)
-  # print('W_c' , vals_ac.T[n+n*m:n+n*m+s,-1])
-  # print('W_c_opt',W_c_opt)
+  print('W_c_error', e_W_c)
+  print('W_c' , vals_ac.y[n+n*m:n+n*m+s,-1])
+  print('W_c_opt',W_c_opt)
   
 
 
@@ -158,18 +157,12 @@ while t_span_ac[1]<=t_span[1]:
 plt.figure()
 # Plotting controlled linear system
 plt.subplot(411)
-# plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='x1')
-# plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='x2')
-# plt.legend(loc="upper left")
-plt.plot(t_eval,vals_lqr[:,0],label='x1')
-plt.plot(t_eval,vals_lqr[:,1],label='x2')
+plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='x1')
+plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='x2')
 plt.legend(loc="upper left")
 
 
-
-
-
-# Plotting learnt controlled linear system
+# Plotting controlled linear system
 plt.subplot(412)
 plt.plot(t_ac,x_ac[:1].T,label='x1')
 plt.plot(t_ac,x_ac[1:2].T,label='x2')
@@ -196,4 +189,5 @@ plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
 plt.legend(loc="upper left")
 plt.show()
 """
+
 
