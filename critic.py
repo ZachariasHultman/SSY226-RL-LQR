@@ -6,9 +6,15 @@ from tools import vech_to_mat_sym, vech_to_mat, sigma_fun
 
 def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n ,m):
 
-    U = np.concatenate((x.T, u.T), 1).T
+    u = np.atleast_2d(u)
+    x = np.atleast_2d(x)
+    print("x",x.shape)
+    print("u",u.shape)
+    print("u_prev", u_prev.shape)
+    print("x_prev", x_prev.shape)
+    U = np.concatenate((x.T, u.T))
 
-    U_prev = np.concatenate((x_prev.T, u_prev.T)).T
+    U_prev = np.concatenate((x_prev.T, u_prev.T))
     print('INTERNAL U',U)
 
 
@@ -23,6 +29,7 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R, T, n 
     # and assumption that the integration is discrete with time step T and only two points of evaluation
     
     if u.shape[0]<2:
+
         int_term = 0.5 * T * ((np.matmul(np.matmul(x.T, M), x) + u*R*u) +
                                 np.matmul(np.matmul(x_prev.T, M), x_prev) + u_prev*R*u_prev)
     else:

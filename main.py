@@ -8,6 +8,8 @@ from dynamic_system_simulation import cart_pendulum_sim_lqr2
 from dynamic_system_simulation import func, double_integrator_with_friction, double_integrator_with_friction2
 from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec, mat_to_vec_sym
 from AnimationFunction import animationfunction
+import critic
+import actor
 
 T = 0.05  # delta t [s]
 t_span =[0, 4]  # Time span for simulation
@@ -55,10 +57,11 @@ n = 2
 m = 1
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 t_eval = np.linspace(t_span[0], t_span[1], int(1/T))
-x_ac = np.ones(shape=(n+n+s+s, 1))
-x_ac[:n, 0] = x_init_double_int
-K =[-1, 0]
-x_ac[n:n+n*m,0]=K
+x_ac = np.array(x_init_double_int)
+x_ac = np.atleast_2d(x_ac)
+x_prev = x_ac
+
+K = [-1, 0]
 
 t_ac = np.ndarray(shape=(1))
 error_K_ac=np.ndarray(shape=(1))
@@ -78,15 +81,13 @@ alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))
 alpha_c = 200
 alpha_a = 34
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
-k0= [-1, 0]
-u=np.matmul(k0, x_ac[:n, 0])
-u=np.atleast_1d(u)
-u_prev=u
-u_prev=np.atleast_1d(u_prev)
+#k0 = [-1, 0]
+#u=np.matmul(k0, x_ac)
+#u=np.atleast_1d(u)
+u_prev = np.zeros(m)
+u_prev=np.atleast_2d(u_prev)
 
-x_prev=x_ac[:n, 0]
-flag=True
-errorFlag=False
+
 t_span_ac=(0, 0)
 
 explore=20
@@ -99,10 +100,14 @@ W_c_opt=mat_to_vec_sym(Q_xx,n)
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec(Q_xu,n,m)))
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec_sym(Q_uu,m)))
 
+W_c_hat = np.ones(s)
+W_c_tilde = np.ones(s)
+W_a_hat = np.array([-1, 0])
+W_a_hat = np.atleast_2d(W_a_hat)
 
 while t_span_ac[1]<=t_span[1]:
-  # print(u_prev)
-  # if t_span_ac[1]>= 1:
+    # print(u_prev)
+    # if t_span_ac[1]>= 1:
     # explore=explore - explore/100
     # alpha_a=alpha_a - alpha_a/100
     # alpha_c=alpha_c-alpha_c/100
@@ -113,36 +118,54 @@ while t_span_ac[1]<=t_span[1]:
     # if explore <= 0:
     #   explore=0
  
-  args_ac = (double_integrator_with_friction2, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T, explore,u)
+    #args_ac = (double_integrator_with_friction2, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T, explore,u)
 
-  t_span_ac = (t_span_ac[1], t_span_ac[1]+T)
 
-  vals_ac, info = integrate.odeint(func, x_ac[:,-1], t_span_ac, args=args_ac, hmin=T, h0=T, mxstep=1, full_output=True)
+    u = np.matmul(np.atleast_2d(x_ac[-1]), W_a_hat.T) + np.random.normal(0, explore, m)
+    u = np.atleast_1d(u)
 
-  u_prev=u
 
-  x_prev= x_ac[:n, -1]
-  u = np.matmul(vals_ac[-1][n:n+n], vals_ac[-1][:n]) + np.random.normal(0,np.abs(u)*explore,m)
-  u=np.atleast_1d(u)
-  # print(u)
-  K_N = vals_ac[-1][n:n+n]
-  # Save time and state values
-  print('K_N',K_N)
+    W_c_hat_dot, W_c_tilde_dot, Q_xu_tilde = critic.approx_update(x_ac[-1], x_prev, u, u_prev, W_c_hat, W_c_tilde, alpha_c, M, R,
+                                                                  T, n, m)
+    W_a_hat_dot, W_a_tilde_dot = actor.approx_update(x_ac[:n, -1], Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a)
 
-  x_ac = np.concatenate((x_ac, np.atleast_2d(vals_ac[-1]).T), axis=1)
-  t_ac = np.concatenate((t_ac, info["tcur"]), axis=0)
-  e = norm_error(K_lqr, K_N)
+    W_c_hat = W_c_hat_old + W_c_hat_dot * T
+    W_c_hat_old = W_c_hat
+    W_a_hat = W_a_hat_old + W_a_hat_dot * T
+    W_a_hat_old = W_a_hat
 
-  e_W_c=norm_error(W_c_opt,vals_ac[-1,n+n*m:n+n*m+s] )
-  error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
-  error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
-  print('time',t_span_ac[1])
-  # print('states',x_ac[:n, -1])
-  # print('error', e)
-  print('W_c_error', e_W_c)
-  print('W_c' , vals_ac.T[n+n*m:n+n*m+s,-1])
-  print('W_c_opt',W_c_opt)
-  
+    x_prev = x_ac[:n, -1]
+
+    x_1 = -x_ac[1, -2]*T + x_ac[0, -1]
+    x_2 = (-0.1 * x_ac[1, -2] + u)*T + x_ac[1, -2]
+
+    #args_ac = (W_a_hat,)
+    t_span_ac = (t_span_ac[1], t_span_ac[1] + T)
+    #vals_ac = integrate.solve_ivp(double_integrator_with_friction, t_span_ac, x_ac[:n, -1], args=args_ac, t_eval=t_span_ac)
+
+
+    u_prev=u
+    x_prev = x_ac[:n, -1]
+
+
+    # print(u)
+    #K_N = vals_ac[-1][n:n+n]
+    # Save time and state values
+
+    x_ac = np.concatenate((x_ac, [x_1, x_2]), axis=1)
+    t_ac = np.concatenate((t_ac, t_span_ac[1]), axis=0)
+    #e = norm_error(K_lqr, K_N)
+
+    #e_W_c=norm_error(W_c_opt,vals_ac.y[n+n*m:n+n*m+s,-1] )
+    #error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
+    #error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
+    print('time', t_span_ac[1])
+    # print('states',x_ac[:n, -1])
+    # print('error', e)
+    #print('W_c_error', e_W_c)
+    #print('W_c' , vals_ac.y[n+n*m:n+n*m+s,-1])
+    #print('W_c_opt',W_c_opt)
+
 
 
 
@@ -151,18 +174,18 @@ while t_span_ac[1]<=t_span[1]:
 
 plt.figure()
 # Plotting controlled linear system
-plt.subplot(411)
+plt.subplot(211)
 plt.plot(vals_lqr.t,vals_lqr.y[:1].T,label='x1')
 plt.plot(vals_lqr.t,vals_lqr.y[1:2].T,label='x2')
 plt.legend(loc="upper left")
 
 
 # Plotting controlled linear system
-plt.subplot(412)
+plt.subplot(212)
 plt.plot(t_ac,x_ac[:1].T,label='x1')
 plt.plot(t_ac,x_ac[1:2].T,label='x2')
 plt.legend(loc="upper left")
-
+"""
 # Plotting error of k
 plt.subplot(413)
 plt.plot(error_K_ac,label='k_error')
@@ -173,7 +196,7 @@ plt.subplot(414)
 plt.plot(error_W_c,label='W_c_error')
 plt.legend(loc="upper left")
 plt.show()
-
+"""
 
 """
 # Plotting controlled linear system
