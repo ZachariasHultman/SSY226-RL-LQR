@@ -7,7 +7,7 @@ import control as ctrl
 
 def norm_error(true_value, approx_value):
     
-    e = 1/np.linalg.norm(true_value)*np.linalg.norm(approx_value-true_value)
+    e = 1/(np.linalg.norm(true_value))*np.linalg.norm(approx_value-true_value)
 
     return e
 
@@ -80,8 +80,11 @@ def sigma_fun(U_curr, U_prev, n, m):
 def kronecker(A,B,n,m):
 
     k=A.shape[0]
+    # print(k)
+    
     s=(int(1/2*((k)*(k+1))),1)
     C=np.ones(s)
+    
 
     for i in range(n):
         C[i]=A[i]*B[i]
@@ -93,6 +96,9 @@ def kronecker(A,B,n,m):
     for i in range(1,m+1):
         C[-i]=A[-i]*B[-i]
 
+    # print(A)
+    # print(C)
+    # # br
     return C
 
 

@@ -2,7 +2,7 @@ import numpy as np
 from tools import vech_to_mat, vech_to_mat_sym
 
 
-def approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a):
+def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
 
     Q_bar = vech_to_mat_sym(W_c_hat, n+m)
     Q_bar_ux = Q_bar[n:,:n]
@@ -16,11 +16,11 @@ def approx_update(x, Q_xu_tilde, W_a_hat, W_c_hat, n, m, alpha_a):
     W_a_hat_dot = -alpha_a*np.matmul(x, e_a.T)
     # Calculates the error as 2-norm of the difference between the new and old W-matrix.
 
-    W_a_tilde = -np.matmul(Q_bar_xu,np.linalg.pinv(Q_bar_uu))-W_a_hat
+    # W_a_tilde = -np.matmul(Q_bar_xu,np.linalg.pinv(Q_bar_uu))-W_a_hat
 
-    W_a_tilde_dot = -alpha_a*np.matmul(np.matmul(x, x.T),W_a_tilde)-alpha_a*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.pinv(Q_bar_uu))
+    # W_a_tilde_dot = -alpha_a*np.matmul(np.matmul(x, x.T),W_a_tilde)-alpha_a*np.matmul(np.matmul(np.matmul(x, x.T),Q_xu_tilde),np.linalg.pinv(Q_bar_uu))
 
-    return W_a_hat_dot, W_a_tilde_dot
+    return W_a_hat_dot #, W_a_tilde_dot
 
 
 
