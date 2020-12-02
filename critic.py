@@ -19,12 +19,14 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, alpha_c, M, R, T, n ,m):
     # print('INTERNAL U_PREV',U_prev)
 
     sigma = sigma_fun(U, U_prev, n, m)
-
+    # print(sigma)
     # Compute new Weights
     # See equation below (e=...) to understand the need of the integral term.
     # The integral term is calculated by assumptions that self-defined matrices M and R are diagonal
     # and assumption that the integration is discrete with time step T and only two points of evaluation
     
+
+    # Gör skillnad på T och dt. Implementera X_histry eller nåt så man går över längre tidssteg och större integral
     if u.shape[0]<2:
         int_term = 0.5 * T* ( (np.matmul(np.matmul(x.T, M), x) + u*R*u) +
                                   (np.matmul(np.matmul(x_prev.T, M), x_prev) + u_prev*R*u_prev))
@@ -41,8 +43,11 @@ def approx_update(x, x_prev, u, u_prev, W_c_hat, alpha_c, M, R, T, n ,m):
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
-    W_c_hat_dot = -alpha_c * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
+    # W_c_hat_dot = -alpha_c * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
+    W_c_hat_dot = -alpha_c * sigma * e.T
+
     # print('W_c_hat_dot',W_c_hat_dot)
+    
     # print('INTERNAL SIGMA**2',np.matmul(sigma.T, sigma)) #This gets really big
 
 

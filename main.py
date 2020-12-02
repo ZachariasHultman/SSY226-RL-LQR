@@ -11,7 +11,7 @@ from AnimationFunction import animationfunction
 import critic
 import actor
 
-T = 0.0005  # delta t [s]
+T = 0.005  # delta t [s]
 t_span =[0, 2]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/T))  # Time span for simulation
 # M_p = 0.5  # cart mass
@@ -27,7 +27,7 @@ t_eval = np.linspace(t_span[0],t_span[1],int(1/T))  # Time span for simulation
 
 # M = np.array([[ 1,         0, 0,0],
 #             [ 0,         1,0,0],
-#             [ 0,         0,100,0,
+#             [ 0,         0,100,0
             # [ 0,         0,0,100]]])
 
 # R = 0.001
@@ -78,25 +78,20 @@ Q_xu=np.matmul(P,B).T
 # alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))))*(2*np.min(np.linalg.eigvals(M+np.matmul(Q_xu,np.matmul(np.linalg.inv(np.atleast_2d(R)),Q_xu.T))))-np.max(np.linalg.eigvals(np.matmul(Q_xu,Q_xu.T))))
 # print(alpha_a_upper)
 
-alpha_c = 5000
-alpha_a = 20
+alpha_c = 50
+alpha_a = 2
+explore=4
 
 u_prev = np.zeros(m)
 u_prev=np.atleast_2d(u_prev)
-
 t_span_ac=(0, 0)
-
-explore=10
-
-t_prev=0
 
 Q_xx=P+M+np.matmul(P,A)+np.matmul(A.T,P)
 Q_uu=R
 W_c_opt=mat_to_vec_sym(Q_xx,n)
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec(Q_xu,n,m)))
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec_sym(Q_uu,m)))
-
-W_c_hat = np.ones(s)
+W_c_hat = np.zeros(s)
 W_c_hat=np.atleast_2d(W_c_hat).T
 W_c_hat_old=W_c_hat
 # W_c_tilde = np.ones(s)
@@ -105,9 +100,15 @@ W_a_hat = np.array([-1, 0])
 W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
 while t_span_ac[1]<=t_span[1]:
+    # if t_span_ac[1]>= t_span[1]/4:
+    #     explore=0
+        # alpha_c =alpha_c-alpha_c/100
+
     # Controll signals
     u = np.matmul(W_a_hat.T,x_curr)
-    u=u+ np.random.normal(0, explore, m,)
+    u_sys=u+ np.random.normal(0, explore, m,)
+    # u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
+
 
     # Actor Critic learning
     W_c_hat_dot = critic.approx_update(x_curr, x_prev, u, u_prev, W_c_hat, alpha_c, M, R, T, n, m)
@@ -121,7 +122,7 @@ while t_span_ac[1]<=t_span[1]:
     # System to be simulated
     x_prev=x_curr
     x_1 = -x_prev[1]*T + x_prev[0]
-    x_2 = (-0.1 * x_prev[1] + u)*T + x_prev[1]
+    x_2 = (-0.1 * x_prev[1] + u_sys)*T + x_prev[1]
     x_curr = np.atleast_2d([x_1 , x_2])
 
     t_span_ac = (t_span_ac[1], t_span_ac[1] + T)
@@ -139,10 +140,10 @@ while t_span_ac[1]<=t_span[1]:
 
     # print('time', t_span_ac[1])
     # print('states',x_ac[:n, -1])
-    # print('error', e)
+    print('error', e)
     # print('W_c_error', e_W_c)
-    #print('W_c' , vals_ac.y[n+n*m:n+n*m+s,-1])
-    #print('W_c_opt',W_c_opt)
+    # print('W_c' ,W_c_hat)
+    # print('W_c_opt',W_c_opt)
 
 #animationfunction(ani_vals, t_ac ,L)
 
