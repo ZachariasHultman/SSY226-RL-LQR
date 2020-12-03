@@ -299,7 +299,12 @@ while (np.linalg.norm(dtheta)> tol):
 ##====End of while loop
 
 #Plot functions:
-plt.plot(theta_record, t)
+#Convert lists to arrays and transform to correct shapes
+time_record = np.array(time_record)
+time_record = time_record.squeeze().reshape(N+1,1)
+theta_record = np.array(theta_record).squeeze()
+
+plt.plot(theta_record, time_record)             # We will have to later look at setup of theta_record array for plotting
 plt.title("Plot of theta")
 plt.xlabel("time (t)")
 plt.ylabel("theta")
