@@ -102,7 +102,67 @@ def kronecker(A,B,n,m):
     return C
 
 
-def vech_to_mat_sym(a, n):
+def vech_to_mat_sym(a, n,m):
+    """
+    Takes a vector which represents the elements in a upper (or lower)
+    triangular matrix and returns a symmetric (n x n) matrix.
+    The off-diagonal elements are divided by 2.
+
+    :param a: input vector of type np array and size n(n+1)/2
+    :param n: dimension of symmetric output matrix A
+    :return: symmetric matrix of type np array size (n x n)
+    """
+    s = int(1 / 2 * ((n + m) * (n + m + 1)))
+    # a=np.atleast_2d(a)
+    A = np.ndarray((n+m, n+m))
+    c = 0
+    # print(len(a))
+    
+    
+    # for j in range(n+m):
+    #     print('j',j)
+    #     for i in range(j, n+m):
+    #         print('i',i)
+    #         for tmp in range(len(a)):
+    #             print('a',a[tmp])
+    #             flag=False
+    #             if tmp < n and tmp >= i:
+    #                 A[i, i] = a[tmp]
+    #                 flag=True
+    #                 print(A)
+    #                 break
+                
+    #             elif tmp-j+i >= s-m:
+    #                 print('Här inne')
+    #                 A[i, i] = a[tmp]
+    #                 print(A)
+    #                 break
+    #             else:
+    #                 print('else')
+    #                 A[j, i] = a[tmp]/2
+    #                 A[i, j] = a[tmp]/2
+    #                 print(A)
+                    
+
+    #     #             A[i, i] = a[c]
+    #     #         else:
+    #     #             A[j, i] = a[c]/2
+    #     #             A[i, j] = a[c]/2
+                    
+
+    #     #         # elif i
+    #     # #             A[i, j] = a[c] /2
+    #     # #             A[j, i] = a[c] /2
+    #     #         print(A)
+    #     #         c += 1
+    #         if flag:
+    #             break
+                
+
+    return A
+
+
+def vech_to_mat_sym_old(a, n,m):
     """
     Takes a vector which represents the elements in a upper (or lower)
     triangular matrix and returns a symmetric (n x n) matrix.
@@ -113,9 +173,10 @@ def vech_to_mat_sym(a, n):
     :return: symmetric matrix of type np array size (n x n)
     """
 
-    A = np.ndarray((n, n))
-
+    A = np.ndarray((n+m, n+m))
     c = 0
+
+    
     for j in range(n):
         for i in range(j, n):
 
@@ -124,11 +185,10 @@ def vech_to_mat_sym(a, n):
                 A[j, i] = a[c]
             else:
                 A[i, j] = a[c] /2
-                A[j, i] = a[c]/2
+                A[j, i] = a[c] /2
             c += 1
 
     return A
-
 
 def vech_to_mat(a, n, m):
     """

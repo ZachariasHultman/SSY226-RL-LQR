@@ -4,9 +4,10 @@ from tools import vech_to_mat, vech_to_mat_sym
 
 def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
     # print(W_c_hat)
-    # W_c_hat=[1 ,2 ,3 ,4 ,5 ,6]
-    Q_bar = vech_to_mat_sym(W_c_hat, n+m)
-    # print(Q_bar)
+    W_c_hat=[1 ,2 ,3 ,4 ,5 ,6]
+    Q_bar = vech_to_mat_sym(W_c_hat, n,m)
+    
+    print(Q_bar)
     # Q_bar=Q_bar*2
     Q_bar_ux = Q_bar[n:,:n]
     Q_bar_xu = Q_bar_ux.T
@@ -20,13 +21,10 @@ def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
     # Q_bar_uu = vech_to_mat_sym(Q_bar_uu,m)
     # print(Q_bar_uu)
 
-    
-
-
-
     # compute actor error
-    e_a = np.matmul(W_a_hat.T, x) + np.matmul(np.matmul(np.linalg.pinv(Q_bar_uu), Q_bar_ux), x)
-    W_a_hat_dot = -alpha_a*np.matmul(x, e_a.T)
+    e_a = W_a_hat.T @ x + np.linalg.pinv(Q_bar_uu) @ Q_bar_ux @ x
+    print(e_a)
+    W_a_hat_dot = -alpha_a*x @ e_a.T
     # Calculates the error as 2-norm of the difference between the new and old W-matrix.
     # br
     # W_a_tilde = -np.matmul(Q_bar_xu,np.linalg.pinv(Q_bar_uu))-W_a_hat

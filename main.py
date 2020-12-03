@@ -11,9 +11,13 @@ from AnimationFunction import animationfunction
 import critic
 import actor
 
-T = 0.005  # delta t [s]
+# T = 0.005  
+dt=0.001 # delta t [s]
 t_span =[0, 2]  # Time span for simulation
-t_eval = np.linspace(t_span[0],t_span[1],int(1/T))  # Time span for simulation
+t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
+n = 2
+m = 1
+
 # M_p = 0.5  # cart mass
 # m_p = 0.2  # pendulum mass
 # g = 9.81  # gravity
@@ -43,8 +47,10 @@ x_init_double_int=[0, 1]  # Initial state. pos, vel, theta, thetadot for lineari
 M = np.array([[ 1,         0],
             [ 0,         1]])
 
-R = 1
+R = np.array([1])
+R= R.reshape(m,m)
 K_lqr, P = double_integrator_lin_lqr_gain(M, R)
+
 args = (K_lqr,)
 # print(K_lqr)
 # vals_lqr = integrate.solve_ivp(double_integrator_with_friction, t_span, x_init_double_int, t_eval=t_eval, args=args)
@@ -52,16 +58,15 @@ vals_lqr=integrate.odeint(double_integrator_with_friction_ODE, x_init_double_int
 # func, x_ac[:,-1], t_span_ac, args=args_ac, mxstep=1, full_output=True)
 
 # Simulation with Actor-Critic
-n = 2
-m = 1
+
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
-t_eval = np.linspace(t_span[0], t_span[1], int(1/T))
 x_ac = np.array(x_init_double_int)
 x_ac = np.atleast_2d(x_ac).T
 x_prev = x_ac
 x_curr=x_ac
 
-K = [-1, 0]
+# K = [-1, 0]
+K=K_lqr
 
 t_ac =[]
 t_ac.append(0)
@@ -72,60 +77,77 @@ A = np.array([[0, -1],
                 [0, -0.1]])
 
 B = np.array([0, 1]).T
-Q_xu=np.matmul(P,B).T
+
 # delta=1
 #ekv 28
 # alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))))*(2*np.min(np.linalg.eigvals(M+np.matmul(Q_xu,np.matmul(np.linalg.inv(np.atleast_2d(R)),Q_xu.T))))-np.max(np.linalg.eigvals(np.matmul(Q_xu,Q_xu.T))))
 # print(alpha_a_upper)
 
-alpha_c = 50
-alpha_a = 2
-explore=4
-
 u_prev = np.zeros(m)
 u_prev=np.atleast_2d(u_prev)
+u_hist=u_prev
 t_span_ac=(0, 0)
 
 Q_xx=P+M+np.matmul(P,A)+np.matmul(A.T,P)
 Q_uu=R
+Q_xu=P @ B
+# Q_xu=Q_ux.T
 W_c_opt=mat_to_vec_sym(Q_xx,n)
-W_c_opt=np.concatenate((W_c_opt,mat_to_vec(Q_xu,n,m)))
+W_c_opt=np.concatenate((W_c_opt,2*mat_to_vec(Q_xu.T,n,m)))
 W_c_opt=np.concatenate((W_c_opt,mat_to_vec_sym(Q_uu,m)))
-W_c_hat = np.zeros(s)
+# W_c_hat = np.zeros(s)
+W_c_hat=W_c_opt
 W_c_hat=np.atleast_2d(W_c_hat).T
 W_c_hat_old=W_c_hat
-# W_c_tilde = np.ones(s)
-W_a_hat = np.array([-1, 0])
 
+
+W_a_hat = np.array(K)
 W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
+k=0
+
+alpha_c = 50
+alpha_a = 2
+explore=2
 while t_span_ac[1]<=t_span[1]:
     # if t_span_ac[1]>= t_span[1]/4:
     #     explore=0
         # alpha_c =alpha_c-alpha_c/100
 
+    if x_ac.shape[1] >=10:
+        k=100
+    else:
+        k=k+1
+
+    # print(x_ac)
+
     # Controll signals
     u = np.matmul(W_a_hat.T,x_curr)
-    u_sys=u+ np.random.normal(0, explore, m,)
-    # u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
+    u_hist=np.concatenate((u_hist, u), axis=1)
+    # print(u_hist)
+    # u_sys=u+ np.random.normal(0, explore, m,)
+    u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
 
-
+    # print(x_ac[-k])
+    # print(x_ac[:,-k:])
+    # print(x_ac)
+    
     # Actor Critic learning
-    W_c_hat_dot = critic.approx_update(x_curr, x_prev, u, u_prev, W_c_hat, alpha_c, M, R, T, n, m)
-    W_a_hat_dot = actor.approx_update(x_curr, W_a_hat, W_c_hat, n, m, alpha_a)
-
-    W_c_hat = W_c_hat_old + W_c_hat_dot * T
+    W_c_hat_dot = critic.approx_update(x_ac[:,-k:],u_hist[:,-k:], W_c_hat, alpha_c, M, R, dt, n, m)
+    W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)
+    print(W_a_hat_dot)
+    W_c_hat = W_c_hat_old + W_c_hat_dot * dt
     W_c_hat_old = W_c_hat
-    W_a_hat = W_a_hat_old + W_a_hat_dot * T
+    W_a_hat = W_a_hat_old + W_a_hat_dot * dt
     W_a_hat_old = W_a_hat
 
     # System to be simulated
-    x_prev=x_curr
-    x_1 = -x_prev[1]*T + x_prev[0]
-    x_2 = (-0.1 * x_prev[1] + u_sys)*T + x_prev[1]
+    x_prev=x_ac[:,-1:]
+    x_1 = -x_prev[1]*dt + x_prev[0]
+    x_2 = (-0.1 * x_prev[1] + u_sys)*dt + x_prev[1]
     x_curr = np.atleast_2d([x_1 , x_2])
 
-    t_span_ac = (t_span_ac[1], t_span_ac[1] + T)
+    t_span_ac = (t_span_ac[1], t_span_ac[1] + dt)
     u_prev=u
         
     x_ac = np.concatenate((x_ac, x_curr), axis=1)
@@ -144,6 +166,8 @@ while t_span_ac[1]<=t_span[1]:
     # print('W_c_error', e_W_c)
     # print('W_c' ,W_c_hat)
     # print('W_c_opt',W_c_opt)
+    # print(W_a_hat)
+    br
 
 #animationfunction(ani_vals, t_ac ,L)
 
