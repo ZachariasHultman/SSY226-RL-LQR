@@ -10,9 +10,9 @@ from AnimationFunction import animationfunction
 import critic
 import actor
 
-T = 0.05  
+T = 0.1  
 dt=0.001 # delta t [s]
-t_span =[0, 3]  # Time span for simulation
+t_span =[0, 10]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 n = 2
 m = 1
@@ -111,7 +111,7 @@ W_c_opt=mat_to_vec_sym(Q_opt,n,m)
 # br
 
 # W_c_hat = np.zeros(s)
-W_c_hat=W_c_opt
+W_c_hat=W_c_opt 
 
 W_c_hat=np.atleast_2d(W_c_hat).T
 
@@ -120,14 +120,14 @@ W_c_hat=np.atleast_2d(W_c_hat).T
 W_c_hat_old=W_c_hat
 
 
-W_a_hat = np.array(K)
+W_a_hat = np.array(K) 
 W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
 k=0
 
-alpha_c = 50
-alpha_a = 2
-explore=2
+alpha_c = 100
+alpha_a = 0
+explore=10
 k_max=int(T/dt)
 # print(k_max)
 # print('T',dt*100)
@@ -148,25 +148,31 @@ while t_span_ac[1]<=t_span[1]:
     u = np.matmul(-W_a_hat.T,x_curr)
     u_hist=np.concatenate((u_hist, u), axis=1)
     # print(u_hist)
-    u_sys=u+ np.random.normal(0, explore, m,)
-    # u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
-    # u_sys=u
+    # u_sys=u+ np.random.normal(0, explore, m,)
+    u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
+    u_sys=u
     # print(x_ac[-k])
     # print(x_ac[:,-k:])
     # print(x_ac)
     
+    # if k % k_max == 0:
+
     # Actor Critic learning
-    W_c_hat_dot = critic.approx_update(x_ac[:,-k:],u_hist[:,-k:], W_c_hat, alpha_c, M, R, dt, n, m)
+    W_c_hat_dot = critic.approx_update(x_ac[:,-k_max:],u_hist[:,-k_max:], W_c_hat, alpha_c, M, R, dt, n, m)
     W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)
-    
+
     # print(W_c_hat_old)
     # print(W_c_hat_dot)
 
-    
     W_c_hat = W_c_hat_old + W_c_hat_dot * dt
     W_c_hat_old = W_c_hat
     W_a_hat = W_a_hat_old + W_a_hat_dot * dt
     W_a_hat_old = W_a_hat
+
+    e = norm_error(K_lqr, W_a_hat.T)
+    e_W_c=norm_error(W_c_opt,W_c_hat.T )
+    error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
+    error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
 
     # print(W_c_hat)
     # br
@@ -187,10 +193,7 @@ while t_span_ac[1]<=t_span[1]:
     t_ac.append(t_span_ac[1])
 
  
-    e = norm_error(K_lqr, W_a_hat.T)
-    e_W_c=norm_error(W_c_opt,W_c_hat.T )
-    error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
-    error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
+    
 
 
     # print('time', t_span_ac[1])

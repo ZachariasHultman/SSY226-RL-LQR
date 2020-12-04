@@ -33,20 +33,11 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
 
     # print(int_term.shape)
     # print(int_term)
-
+    # print(int_term)
     int_term=np.trapz(int_term,dx=dt)
-    # print('int term',int_term)
+    print('int term',int_term)
 
-    # Gör skillnad på T och dt. Implementera X_histry eller nåt så man går över längre tidssteg och större integral
-    # if u.shape[0]<2:
-    #     int_term = 0.5 * dt* ( (np.matmul(np.matmul(x.T, M), x) + u*R*u) +
-    #                               (np.matmul(np.matmul(x_prev.T, M), x_prev) + u_prev*R*u_prev))
-    # else:
-    #     int_term = 0.5 * dt * ((np.matmul(np.matmul(x.T, M), x) + np.matmul(np.matmul(u.T, R), u)) +
-    #                             (np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev)))
     
-
-
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
     e = W_c_hat.T @ kronecker(U, U,n,m) + 0.5 *int_term - W_c_hat.T @ kronecker(U_prev, U_prev,n,m)
     # e=np.abs(e)
@@ -58,12 +49,10 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
-    W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
-    # W_c_hat_dot = -alpha_c * sigma * e.T
+    # W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
+    W_c_hat_dot = -alpha_c * sigma * e.T
 
     # print('W_c_hat_dot',W_c_hat_dot)
-    # br
-    # print('INTERNAL SIGMA**2',np.matmul(sigma.T, sigma)) #This gets really big
 
 
     # W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
