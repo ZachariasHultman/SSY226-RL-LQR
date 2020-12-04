@@ -11,7 +11,7 @@ from AnimationFunction import animationfunction
 import critic
 import actor
 
-# T = 0.005  
+T = 0.05  
 dt=0.001 # delta t [s]
 t_span =[0, 2]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
@@ -113,7 +113,9 @@ W_c_opt=mat_to_vec_sym(Q_opt,n,m)
 
 # W_c_hat = np.zeros(s)
 W_c_hat=W_c_opt
+
 W_c_hat=np.atleast_2d(W_c_hat).T
+
 # print(W_c_hat)
 
 W_c_hat_old=W_c_hat
@@ -124,10 +126,11 @@ W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
 k=0
 
-alpha_c = 50
-alpha_a = 2
+alpha_c = 0
+alpha_a = 0
 explore=2
-
+k_max=int(T/dt)
+# print(k_max)
 # print('T',dt*100)
 # br
 while t_span_ac[1]<=t_span[1]:
@@ -135,8 +138,8 @@ while t_span_ac[1]<=t_span[1]:
     #     explore=0
         # alpha_c =alpha_c-alpha_c/100
 
-    if x_ac.shape[1] >=10:
-        k=50
+    if x_ac.shape[1] >=k_max:
+        k=k_max
     else:
         k=k+1
 
@@ -157,13 +160,17 @@ while t_span_ac[1]<=t_span[1]:
     W_c_hat_dot = critic.approx_update(x_ac[:,-k:],u_hist[:,-k:], W_c_hat, alpha_c, M, R, dt, n, m)
     W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)
     
-  
+    # print(W_c_hat_old)
+    # print(W_c_hat_dot)
 
+    
     W_c_hat = W_c_hat_old + W_c_hat_dot * dt
     W_c_hat_old = W_c_hat
     W_a_hat = W_a_hat_old + W_a_hat_dot * dt
     W_a_hat_old = W_a_hat
 
+    # print(W_c_hat)
+    # br
 
     # System to be simulated
     x_prev=x_ac[:,-1:]
@@ -186,7 +193,7 @@ while t_span_ac[1]<=t_span[1]:
 
     # print('time', t_span_ac[1])
     # print('states',x_ac[:n, -1])
-    print('error', e)
+    # print('error', e)
     # print('W_c_error', e_W_c)
     # print('W_c' ,W_c_hat)
     # print('W_c_opt',W_c_opt)

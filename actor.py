@@ -5,6 +5,8 @@ from tools import vech_to_mat_sym
 def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
     # print(W_c_hat)
     # W_c_hat=[1 ,2 ,3 ,4 ,5 ,6]
+    # print(W_c_hat)
+    
     Q_bar = vech_to_mat_sym(W_c_hat, n,m)
     
     # print(Q_bar)

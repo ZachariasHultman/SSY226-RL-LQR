@@ -79,27 +79,40 @@ def sigma_fun(U_curr, U_prev, n, m):
 
 
 def kronecker(A,B,n,m):
-
+    # m=2
+    # A=np.array([[1],[2],[3],[4]])
+    # B=np.array([[1],[2],[3],[4]])
     k=A.shape[0]
     # print(k)
+    # [1*1 , 2*2, 1*2, 1*3,2*3,3*3]
+    # [x1**2, x2**2, x1x2, x1u, x2u, u**2]
+    # [x1**2, x2**2, x1x2, x1u1, x1u2, x2u1,x2u2, u1u2 ,u1**2, u2**2]
     
-    s=(int(1/2*((k)*(k+1))),1)
-    C=np.ones(s)
-
+    s = int(1 / 2 * ((n + m) * (n + m + 1)))
+    C=np.zeros(s)
+    # print(C)
 
     for i in range(n):
         C[i]=A[i]*B[i]
 
+    # print(range(n+m))
+    c=n
     for i in range(n+m-1):
+        # print('i',i)
         for j in range(i+1,n+m):
-            C[i+n]=A[i]*B[j]
+            # print('j',j)
+            C[c]=A[i]*B[j]
+            c+=1
+            # print(C)
 
     for i in range(1,m+1):
         # print('A',A[-i])
         # print('B',B[-i])
         C[-i]=A[-i]*B[-i]
    
-    return C
+    # print('C',C.reshape(s,1))
+    # br
+    return C.reshape(s,1)
 
 
 def vech_to_mat_sym(a, n,m):
