@@ -1,4 +1,3 @@
-
 import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
@@ -104,7 +103,12 @@ Q_opt_lower=np.concatenate((Q_xu.T,Q_uu),1)
 Q_opt=np.concatenate((Q_opt_upper,Q_opt_lower),0)
 # print(Q_opt)
 W_c_opt=mat_to_vec_sym(Q_opt,n,m)
+# W_c_opt=mat_to_vec_sym(Q_opt,n,2)
 
+# print(W_c_opt)
+# test=vech_to_mat_sym(W_c_opt, n,2)
+# print(test)
+# br
 
 # W_c_hat = np.zeros(s)
 W_c_hat=W_c_opt
@@ -121,8 +125,8 @@ W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
 k=0
 
-alpha_c = 50
-alpha_a = 2
+alpha_c = 0
+alpha_a = 0
 explore=2
 k_max=int(T/dt)
 # print(k_max)
@@ -239,4 +243,3 @@ plt.plot(vals_lqr.t,vals_lqr.y[3:4].T,label='theta_dot')
 plt.legend(loc="upper left")
 plt.show()
 """
-
