@@ -397,7 +397,7 @@ def kronecker(A, B, n, m):
 
     return C.reshape(s, 1)
 
-def diff_Si(U,Ke,xdot, n, m):
+def diff_Si(U,Ke,xdot,eps,epsdot,n,m):
     # U: si in paper e.g
     # n
     s = 0.5*(len(U)*(len(U)+1))
@@ -414,10 +414,10 @@ def diff_Si(U,Ke,xdot, n, m):
     d[n]=xdot[0]*U[1]+U[0]*xdot[1]
 
     for i in range(2):
-        d[i+n+m]=xdot[i]*np.matmul(Ke,U[0:2])+U[i]*np.matmul(Ke,xdot) #add 'epsilon' later
+        d[i+n+m]=xdot[i]*np.matmul(Ke,U[0:2])+U[i]*np.matmul(Ke,xdot) + xdot[i]*eps + U[i]*epsdot
 
     for i in range(1, m + 1):
-        d[-i] = 2*U[-i]*(np.matmul(Ke,xdot)) #add "epsilon" later
+        d[-i] = 2*np.matmul(Ke,U[0:2])*np.matmul(Ke,xdot) + 2*np.matmul(Ke,xdot)*eps + 2*np.matmul(Ke,U[0:2])*epsdot + 2*eps*epsdot
 
     return d
 
@@ -435,11 +435,11 @@ def Q_func(d, Si, theta):
 
     return Q
 
-def eps_func(Q, Qscore, c, zeta, b, a, theta, M, R, x, phi, n, m):
-    dQscore = diff_d(x, phi ,M,R) + np.matmul(theta.T,diff_Si(np.concatenate(x,phi), m, n)) + np.matmul(diff_theta(zeta, b, a, theta),kronecker(np.concatenate(x,phi), np.concatenate(x,phi), n, m))
-    eps = -Q + Qscore + c + dQscore
-
-    return eps
+#def eps_func(Q, Qscore, c, zeta, b, a, theta, M, R, x, phi, n, m):
+#    dQscore = diff_d(x, phi ,M,R) + np.matmul(theta.T,diff_Si(np.concatenate(x,phi), m, n)) + np.matmul(diff_theta(zeta, b, a, theta),kronecker(np.concatenate(x,phi), np.concatenate(x,phi), n, m))
+#    eps = -Q + Qscore + c + dQscore
+#
+#    return eps
 
 def diff_theta(zeta, b, a, theta, G_hat_inv):
     dtheta_pt1 = (np.matmul(zeta.T, theta) + b)
@@ -467,13 +467,13 @@ def G_inv_func(time_record, zeta_record, s):
     G_hat = integrand / time_record[-1]
     return np.linalg.pinv(G_hat)
 
-def double_integrator_with_friction_noise(t, x, K):
+def double_integrator_with_friction_noise(t, x, u, K):
     x1, x2 = x
-    u = compute_u(K,x,t)
+    #u = compute_u(K,x,t)
 
 
     x_1_dot = x2#-x2
-    x_2_dot = -0.1 * x2 + u
+    x_2_dot = -0.1 * x2 + u[0]
 
     return [x_1_dot, x_2_dot]
 #####============STRUCTURE OF CODE==============
@@ -482,20 +482,186 @@ def double_integrator_with_friction_noise(t, x, K):
 2. While loop till theta - dtheta converges
 3. counter of N = N + 1
 """
+
+
+def readfile_func(filename):
+    '''This function gets the offline values of time, states and input from given csv file ---> filename'''
+    datafile = pd.read_csv('{}.csv'.format(filename))
+    print(datafile.head())
+    t = datafile['t'].to_numpy()
+    x1 = datafile['x1'].to_numpy()
+    x2 = datafile['x2'].to_numpy()
+    u = datafile['u'].to_numpy()
+    #================================================
+    a1 = datafile['a1'].to_numpy()
+    a2 = datafile['a2'].to_numpy()
+    a3 = datafile['a3'].to_numpy()
+    a4 = datafile['a4'].to_numpy()
+    a5 = datafile['a5'].to_numpy()
+    a6 = datafile['a6'].to_numpy()
+    a7 = datafile['a7'].to_numpy()
+    a8 = datafile['a8'].to_numpy()
+    a9 = datafile['a9'].to_numpy()
+    a10 = datafile['a10'].to_numpy()
+    a11 = datafile['a11'].to_numpy()
+    a12 = datafile['a12'].to_numpy()
+    a13 = datafile['a13'].to_numpy()
+    a14 = datafile['a14'].to_numpy()
+    a15 = datafile['a15'].to_numpy()
+    a16 = datafile['a16'].to_numpy()
+    a17 = datafile['a17'].to_numpy()
+    a18 = datafile['a18'].to_numpy()
+    a19 = datafile['a19'].to_numpy()
+    a20 = datafile['a20'].to_numpy()
+    a21 = datafile['a21'].to_numpy()
+    a22 = datafile['a22'].to_numpy()
+    a23 = datafile['a23'].to_numpy()
+    a24 = datafile['a24'].to_numpy()
+    #================================================
+    f1 = datafile['f1'].to_numpy()
+    f2 = datafile['f2'].to_numpy()
+    f3 = datafile['f3'].to_numpy()
+    f4 = datafile['f4'].to_numpy()
+    f5 = datafile['f5'].to_numpy()
+    f6 = datafile['f6'].to_numpy()
+    f7 = datafile['f7'].to_numpy()
+    f8 = datafile['f8'].to_numpy()
+    f9 = datafile['f9'].to_numpy()
+    f10 = datafile['f10'].to_numpy()
+    f11 = datafile['f11'].to_numpy()
+    f12 = datafile['f12'].to_numpy()
+    f13 = datafile['f13'].to_numpy()
+    f14 = datafile['f14'].to_numpy()
+    f15 = datafile['f15'].to_numpy()
+    f16 = datafile['f16'].to_numpy()
+    f17 = datafile['f17'].to_numpy()
+    f18 = datafile['f18'].to_numpy()
+    f19 = datafile['f19'].to_numpy()
+    f20 = datafile['f20'].to_numpy()
+    f21 = datafile['f21'].to_numpy()
+    f22 = datafile['f22'].to_numpy()
+    f23 = datafile['f23'].to_numpy()
+    f24 = datafile['f24'].to_numpy()
+    #================================================
+    p1 = datafile['p1'].to_numpy()
+    p2 = datafile['p2'].to_numpy()
+    p3 = datafile['p3'].to_numpy()
+    p4 = datafile['p4'].to_numpy()
+    p5 = datafile['p5'].to_numpy()
+    p6 = datafile['p6'].to_numpy()
+    p7 = datafile['p7'].to_numpy()
+    p8 = datafile['p8'].to_numpy()
+    p9 = datafile['p9'].to_numpy()
+    p10 = datafile['p10'].to_numpy()
+    p11 = datafile['p11'].to_numpy()
+    p12 = datafile['p12'].to_numpy()
+    p13 = datafile['p13'].to_numpy()
+    p14 = datafile['p14'].to_numpy()
+    p15 = datafile['p15'].to_numpy()
+    p16 = datafile['p16'].to_numpy()
+    p17 = datafile['p17'].to_numpy()
+    p18 = datafile['p18'].to_numpy()
+    p19 = datafile['p19'].to_numpy()
+    p20 = datafile['p20'].to_numpy()
+    p21 = datafile['p21'].to_numpy()
+    p22 = datafile['p22'].to_numpy()
+    p23 = datafile['p23'].to_numpy()
+    p24 = datafile['p24'].to_numpy()
+    x = np.concatenate((x1,x2), axis=0)
+    a = np.concatenate((a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24), axis=0)
+    f = np.concatenate((f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24), axis=0)
+    p = np.concatenate((p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24), axis=0)
+    n = x1.shape[0]
+    x = x.reshape(2, n)
+    a = a.reshape(24, n)
+    f = f.reshape(24, n)
+    p = p.reshape(24, n)
+    return t, x, u, a, f, p
+
+def eps_func(t, a, f, p):
+    e = 0
+    for i in range(24):
+        e += a[i]*f[i]*np.sin(f[i]*t + p[i])
+    return e
+
+def diff_eps(t, a, f, p):
+    dedt = 0
+    for i in range(24):
+        dedt += a[i]*f[i]*np.cos(f[i]*t + p[i])
+    return dedt
+
+
+def vech_to_mat_sym(a, n, m):
+    """
+    Takes a vector which represents the elements in a upper (or lower)
+    triangular matrix and returns a symmetric (n x n) matrix.
+    The off-diagonal elements are divided by 2.
+    :param a: input vector of type np array and size n(n+1)/2
+    :param n: dimension of symmetric output matrix A
+    :return: symmetric matrix of type np array size (n x n)
+    """
+    s = int(1 / 2 * ((n + m) * (n + m + 1)))
+    A = np.ndarray((n + m, n + m))
+
+    for tmp in range(n):
+        A[tmp, tmp] = a[tmp]
+
+    c = m
+    for j in range(n, n + m):
+        for i in range(j, n + m):
+            for tmp in range(s - c, s):
+                A[i, i] = a[tmp]
+                c -= 1
+                break
+
+    c = n
+    for j in range(n + m):
+        for i in range(j + 1, n + m):
+            A[i, j] = a[c] / 2
+            A[j, i] = a[c] / 2
+            c += 1
+    return A
+
+
+def mat_to_vec_sym(A, n, m):
+    s = int(1 / 2 * ((n + m) * (n + m + 1)))
+    a = np.ndarray((s))
+    c = 0
+    # [1,4,3,5,6,7,8,11,9,12]
+
+    for tmp in range(n):
+        a[tmp] = A[tmp, tmp]
+
+    c = m
+    for j in range(n, n + m):
+        for i in range(j, n + m):
+            for tmp in range(s - c, s):
+                a[tmp] = A[i, i]
+                c -= 1
+                break
+
+    c = n
+    for j in range(n + m):
+        for i in range(j + 1, n + m):
+            a[c] = A[i, j] * 2
+            c += 1
+    return a
+
 # run simulation
 #from dynamic_system_simulation import cart_pendulum_sim_lqr
 from scipy import integrate
 filename = "offlinedata"
-[time_offline, x_offline, u_offline] = readfile_func(filename)
-print(x_offline[1:].shape)
-print(time_offline.reshape(1,500).shape)
+time_offline, x_offline, u_offline, amp, fr, p = readfile_func(filename)
+#[time_offline, x_offline, u_offline] = readfile_func(filename)
+#print(x_offline[1:].shape)
+#print(time_offline.reshape(1,500).shape)
 
-plt.plot(x_offline[1,:], label = 'x2')
-plt.plot(x_offline[0,:], label = 'x1')
-plt.plot(u_offline, label = 'u')
-plt.legend()
-plt.title("Offline trajectories")
-plt.show()
+#plt.plot(x_offline[1,:], label = 'x2')
+#plt.plot(x_offline[0,:], label = 'x1')
+#plt.plot(u_offline, label = 'u')
+#plt.legend()
+#plt.title("Offline trajectories")
+#plt.show()
 
 M = 0.5  # cart mass
 m = 0.2  # pendulum mass
@@ -578,8 +744,8 @@ while (np.linalg.norm(dtheta)> tol):
     x_off = x_offline[:,N]
     t_off = time_offline[N]
 
-    u_off = compute_u(Ke,x_off,t_off)
-    d_off = cost_func(x_off,u_off,M,R)
+    u_off = np.array([u_offline[N]])
+    #d_off = cost_func(x_off,u_off,M,R)
     # print("x_off", x_off)
     # print("u_off", u_off)
     d_policy_off = cost_func(x_off,phi,M,R)
@@ -603,8 +769,10 @@ while (np.linalg.norm(dtheta)> tol):
 
     zeta_pt1 = kronecker(U2, U2, n, m)
     zeta_pt2 = kronecker(U1, U1, n, m)
-    xdot=np.array(double_integrator_with_friction_noise(t_off, x_off, Ke)).T
-    zeta_pt3 = diff_Si(U2,Ke,xdot, n, m) #(zeta_pt1 - zeta_pt1_prev) / (t - t_prev)
+    xdot=np.array(double_integrator_with_friction_noise(t_off, x_off, u_off, Ke)).T
+    eps = eps_func(t_off, amp[:,N], fr[:,N], p[:,N])
+    epsdot = diff_eps(t, amp[:,N], fr[:,N], p[:,N])
+    zeta_pt3 = diff_Si(U2,Ke,xdot,eps,epsdot,n,m) #(zeta_pt1 - zeta_pt1_prev) / (t - t_prev)
     zeta_pt3 = zeta_pt3.reshape([np.size(zeta_pt1), 1])
     zeta = zeta_pt1 - zeta_pt2 + zeta_pt3
     #zeta_pt1_prev = zeta_pt1
@@ -615,26 +783,27 @@ while (np.linalg.norm(dtheta)> tol):
 
     #Define b(t):
     t = time.time() - start
-    time_record.append(t)
+    time_record.append(t_off)
 
     dphi = cost_func(x,phi,M,R)
     dphi = np.atleast_1d(dphi).reshape(1,1)
-    phidot=np.matmul(K_N,xdot)
+    phidot=np.array([np.matmul(K_N,xdot)])
 
+    #changed phidot to array
     ddf=diff_d(x_off, u_off, xdot, phidot, M, R)
 
     d_prev = d
     t_prev = t
     ddf = np.atleast_1d(ddf)
     b = c - d + d_policy_off + ddf #diff_d(x,phi,M,R)
-    # print("c",c)
-    # print("d",d)
-    # print("dpoloff",d_policy_off)
-    # print("ddf",ddf)
+    #print("c",c)
+    #print("d",d)
+    #print("d_policy",d_policy_off)
+    #print("ddt d_policy",ddf)
 
     b = b.squeeze()
     b = np.atleast_1d(b)
-    # print("b",b)
+
 
     a = g/(t+1)
 
@@ -645,22 +814,31 @@ while (np.linalg.norm(dtheta)> tol):
 
     dtheta = diff_theta(zeta, b, a, theta, np.eye(s))
 
-    # print("zeta", zeta)
-
     print("theta before update", theta)
-    print("dtheta before update", dtheta)
+    #print("zeta", zeta)
+    #print("b", b)
+    #print("a", a)
+    print("dtheta", dtheta)
     #Update theta
-    theta = theta - dtheta
+    factor=1
+    theta = theta - factor*dtheta
     theta_record.append(theta)
 
     #Implement eq 22:
 
-    dim1 = np.int(n * (n + 1) / 2 + 1)
-    dim2 = np.int(n * (n + 1) / 2 + n * m)
-    K_N = np.array((theta[dim1], theta[dim2])).T / theta[-m]  # Quu^-1*Qxu
-    phi = np.matmul(K_N, x.reshape(2, 1))
+    #dim1 = np.int(n * (n + 1) / 2 + 1)
+    #dim2 = np.int(n * (n + 1) / 2 + n * m)
+    #K_N = np.array((theta[dim1], theta[dim2])).T / theta[-m]  # Quu^-1*Qxu
+    #print("K_N", K_N)
+    Qbar = vech_to_mat_sym(theta, n, m)
+    Qux = Qbar[-1][0:2]
+    K_N = -np.linalg.pinv(R)*Qux
+    phi = np.matmul(-np.linalg.pinv(R)*Qux,x_off)
+    print("K_N",K_N)
+    #phi = np.matmul(K_N, x.reshape(2, 1))
     phi = phi.squeeze()
     phi = np.atleast_1d(phi)
+    phi_record.append(phi)
     print("phi: ", phi)
 
 
@@ -677,8 +855,31 @@ while (np.linalg.norm(dtheta)> tol):
 
 #Plot functions:
 
-plt.plot(theta_record, t)
+len_time_theta = np.shape(time_record)[0]
+print("final time", time_offline[len_time_theta-1])
+len_phi = np.shape(phi_record)
+thetarect = np.array(theta_record[0:len_time_theta]).reshape(s,len_time_theta)
+
+
+plt.plot(time_record, thetarect[0,:])
+plt.plot(time_record, thetarect[1,:])
+plt.plot(time_record, thetarect[2,:])
+plt.plot(time_record, thetarect[3,:])
+plt.plot(time_record, thetarect[4,:])
+plt.plot(time_record, thetarect[5,:])
 plt.title("Plot of theta")
 plt.xlabel("time (t)")
 plt.ylabel("theta")
 plt.show()
+
+#timerect = np.array(time_record[0:len_time_theta]).reshape(len_time_theta,1)
+#timerect = timerect[0:len_phi-1][0]
+#print("shape of ohi", np.shape(timerect))
+#rint("tiem 15",time_record[15])
+#print("phi 15",phi_record[15])
+#phirect = np.array(phi_record[0:len_phi].reshape(len_phi,1))
+#plt.plot(timerect, phirect)
+#plt.title("Plot of phi")
+#plt.xlabel("time (t)")
+#plt.ylabel("phi")
+#plt.show()
