@@ -46,6 +46,7 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     #                             (np.matmul(np.matmul(x_prev.T, M), x_prev) + np.matmul(np.matmul(u_prev.T, R), u_prev)))
     
 
+
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
     e = W_c_hat.T @ kronecker(U, U,n,m) + 0.5 *int_term - W_c_hat.T @ kronecker(U_prev, U_prev,n,m)
     # e=np.abs(e)
