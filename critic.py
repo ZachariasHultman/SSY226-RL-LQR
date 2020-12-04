@@ -58,8 +58,8 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
-    # W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
-    W_c_hat_dot = -alpha_c * sigma * e.T
+    W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
+    # W_c_hat_dot = -alpha_c * sigma * e.T
 
     # print('W_c_hat_dot',W_c_hat_dot)
     # br
