@@ -113,122 +113,52 @@ def vech_to_mat_sym(a, n,m):
     :return: symmetric matrix of type np array size (n x n)
     """
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
-    # a=np.atleast_2d(a)
     A = np.ndarray((n+m, n+m))
-    c = 0
-    # print(len(a))
-    
-    
-    # for j in range(n+m):
-    #     print('j',j)
-    #     for i in range(j, n+m):
-    #         print('i',i)
-    #         for tmp in range(len(a)):
-    #             print('a',a[tmp])
-    #             flag=False
-    #             if tmp < n and tmp >= i:
-    #                 A[i, i] = a[tmp]
-    #                 flag=True
-    #                 print(A)
-    #                 break
-                
-    #             elif tmp-j+i >= s-m:
-    #                 print('Här inne')
-    #                 A[i, i] = a[tmp]
-    #                 print(A)
-    #                 break
-    #             else:
-    #                 print('else')
-    #                 A[j, i] = a[tmp]/2
-    #                 A[i, j] = a[tmp]/2
-    #                 print(A)
-                    
 
-    #     #             A[i, i] = a[c]
-    #     #         else:
-    #     #             A[j, i] = a[c]/2
-    #     #             A[i, j] = a[c]/2
-                    
-
-    #     #         # elif i
-    #     # #             A[i, j] = a[c] /2
-    #     # #             A[j, i] = a[c] /2
-    #     #         print(A)
-    #     #         c += 1
-    #         if flag:
-    #             break
-                
-
+    for tmp in range(n):
+        A[tmp,tmp]=a[tmp]
+        
+    c=m
+    for j in range(n,n+m):
+        for i in range(j,n+m):
+            for tmp in range(s-c,s):
+                A[i,i]=a[tmp]
+                c-=1
+                break
+  
+    c=n
+    for j in range(n+m):
+        for i in range(j+1,n+m):
+            A[i,j]=a[c]/2
+            A[j,i]=a[c]/2
+            c+=1
     return A
 
 
-def vech_to_mat_sym_old(a, n,m):
-    """
-    Takes a vector which represents the elements in a upper (or lower)
-    triangular matrix and returns a symmetric (n x n) matrix.
-    The off-diagonal elements are divided by 2.
 
-    :param a: input vector of type np array and size n(n+1)/2
-    :param n: dimension of symmetric output matrix A
-    :return: symmetric matrix of type np array size (n x n)
-    """
-
-    A = np.ndarray((n+m, n+m))
+def mat_to_vec_sym(A, n, m):
+    s = int(1 / 2 * ((n + m) * (n + m + 1)))
+    a = np.ndarray((s))
     c = 0
-
+    # [1,4,3,5,6,7,8,11,9,12]
     
-    for j in range(n):
-        for i in range(j, n):
-
-            if i == j:
-                A[i, j] = a[c]
-                A[j, i] = a[c]
-            else:
-                A[i, j] = a[c] /2
-                A[j, i] = a[c] /2
-            c += 1
-
-    return A
-
-def vech_to_mat(a, n, m):
-    """
-    Takes a vector a and stacks the elements in a (n x m) matrix
-
-    :param a: vector of type np array of size nm
-    :param n: rows in output matrix
-    :param m: columns in output matrix
-    :return: (n x m) matrix of type np array
-    """
-    # print(a)
-    A = np.ndarray((n, m))
-    for j in range(m):
-        for i in range(n):
-            A[i, j] = a[i+n*j]
-    return A
-
-
-def mat_to_vec_sym(A, n):
-    a = np.ndarray((int(n*(n+1)/2)))
-    A=np.atleast_2d(A)
-    c = 0
-    for j in range(n):
-        for i in range(j, n):
-
-            if i == j:
-                a[c] = A[i, j]
-            else:
-                a[c] = A[i, j] * 2
-            c += 1
+    for tmp in range(n):
+        a[tmp]=A[tmp,tmp]
+        
+    c=m
+    for j in range(n,n+m):
+        for i in range(j,n+m):
+            for tmp in range(s-c,s):
+                a[tmp]=A[i,i]
+                c-=1
+                break
+        
+    c=n
+    for j in range(n+m):
+        for i in range(j+1,n+m):
+            a[c]=A[i,j]*2
+            c+=1
     return a
 
 
-def mat_to_vec(A, n, m):
 
-    a = np.ndarray(n*m)
-    c = 0
-    for j in range(m):
-        for i in range(n):
-            a[c] = A[i, j]
-            c += 1
-
-    return a

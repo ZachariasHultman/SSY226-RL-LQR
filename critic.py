@@ -1,6 +1,6 @@
 import numpy as np
 from tools import kronecker
-from tools import vech_to_mat_sym, vech_to_mat, sigma_fun
+from tools import vech_to_mat_sym, sigma_fun
 # equation 20 is the following function
 
 
@@ -47,9 +47,10 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     
 
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
-    e = np.matmul(W_c_hat.T, kronecker(U, U,n,m)) +0.5 *int_term - np.matmul(W_c_hat.T, kronecker(U_prev, U_prev,n,m))
+    e = W_c_hat.T @ kronecker(U, U,n,m) +0.5 *int_term - W_c_hat.T @ kronecker(U_prev, U_prev,n,m)
     # e=np.abs(e)
-    # print(e)
+    print(e)
+    # br
 
     # Update of the critic approximation weights (Equation 20)
 
@@ -57,7 +58,7 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     W_c_hat_dot = -alpha_c * sigma / ((1 + np.matmul(sigma.T, sigma))**2) * e.T
     # W_c_hat_dot = -alpha_c * sigma * e.T
 
-    # print('W_c_hat_dot',W_c_hat_dot)
+    print('W_c_hat_dot',W_c_hat_dot)
     
     # print('INTERNAL SIGMA**2',np.matmul(sigma.T, sigma)) #This gets really big
 

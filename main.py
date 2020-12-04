@@ -6,7 +6,7 @@ import control as ctrl
 from dynamic_system_simulation import cart_pendulum_sim_lqr
 from dynamic_system_simulation import cart_pendulum_sim_lqr2
 from dynamic_system_simulation import func, double_integrator_with_friction, double_integrator_with_friction2, double_integrator_with_friction_ODE, double_integrator_with_friction2_ODE
-from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec, mat_to_vec_sym
+from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec_sym, vech_to_mat_sym
 from AnimationFunction import animationfunction
 import critic
 import actor
@@ -62,10 +62,11 @@ vals_lqr=integrate.odeint(double_integrator_with_friction_ODE, x_init_double_int
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 x_ac = np.array(x_init_double_int)
 x_ac = np.atleast_2d(x_ac).T
+
 x_prev = x_ac
 x_curr=x_ac
 
-# K = [-1, 0]
+# K = np.array([[-1],[0]])
 K=K_lqr
 
 t_ac =[]
@@ -76,7 +77,7 @@ error_W_c=np.ndarray(shape=(1))
 A = np.array([[0, -1],
                 [0, -0.1]])
 
-B = np.array([0, 1]).T
+B = np.array([[0],[1]])
 
 # delta=1
 #ekv 28
@@ -91,13 +92,30 @@ t_span_ac=(0, 0)
 Q_xx=P+M+np.matmul(P,A)+np.matmul(A.T,P)
 Q_uu=R
 Q_xu=P @ B
+
 # Q_xu=Q_ux.T
-W_c_opt=mat_to_vec_sym(Q_xx,n)
-W_c_opt=np.concatenate((W_c_opt,2*mat_to_vec(Q_xu.T,n,m)))
-W_c_opt=np.concatenate((W_c_opt,mat_to_vec_sym(Q_uu,m)))
+# Q_xx=np.array([[1,2],[3,4]])
+# Q_xu=np.array([[5,6],[7,8]])
+# Q_uu=np.array([[9,10],[11,12]])
+
+
+Q_opt_upper=np.concatenate((Q_xx,Q_xu),1)
+Q_opt_lower=np.concatenate((Q_xu.T,Q_uu),1)
+Q_opt=np.concatenate((Q_opt_upper,Q_opt_lower),0)
+# print(Q_opt)
+W_c_opt=mat_to_vec_sym(Q_opt,n,m)
+# W_c_opt=mat_to_vec_sym(Q_opt,n,2)
+
+# print(W_c_opt)
+# test=vech_to_mat_sym(W_c_opt, n,2)
+# print(test)
+# br
+
 # W_c_hat = np.zeros(s)
 W_c_hat=W_c_opt
 W_c_hat=np.atleast_2d(W_c_hat).T
+# print(W_c_hat)
+
 W_c_hat_old=W_c_hat
 
 
@@ -109,13 +127,16 @@ k=0
 alpha_c = 50
 alpha_a = 2
 explore=2
+
+# print('T',dt*100)
+# br
 while t_span_ac[1]<=t_span[1]:
     # if t_span_ac[1]>= t_span[1]/4:
     #     explore=0
         # alpha_c =alpha_c-alpha_c/100
 
     if x_ac.shape[1] >=10:
-        k=100
+        k=50
     else:
         k=k+1
 
@@ -126,8 +147,8 @@ while t_span_ac[1]<=t_span[1]:
     u_hist=np.concatenate((u_hist, u), axis=1)
     # print(u_hist)
     # u_sys=u+ np.random.normal(0, explore, m,)
-    u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
-
+    # u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
+    u_sys=u
     # print(x_ac[-k])
     # print(x_ac[:,-k:])
     # print(x_ac)
@@ -135,11 +156,14 @@ while t_span_ac[1]<=t_span[1]:
     # Actor Critic learning
     W_c_hat_dot = critic.approx_update(x_ac[:,-k:],u_hist[:,-k:], W_c_hat, alpha_c, M, R, dt, n, m)
     W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)
-    print(W_a_hat_dot)
+    
+  
+
     W_c_hat = W_c_hat_old + W_c_hat_dot * dt
     W_c_hat_old = W_c_hat
     W_a_hat = W_a_hat_old + W_a_hat_dot * dt
     W_a_hat_old = W_a_hat
+
 
     # System to be simulated
     x_prev=x_ac[:,-1:]
@@ -153,8 +177,8 @@ while t_span_ac[1]<=t_span[1]:
     x_ac = np.concatenate((x_ac, x_curr), axis=1)
     t_ac.append(t_span_ac[1])
 
-
-    e = norm_error(K_lqr, W_a_hat)
+ 
+    e = norm_error(K_lqr, W_a_hat.T)
     e_W_c=norm_error(W_c_opt,W_c_hat )
     error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
     error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
@@ -167,7 +191,7 @@ while t_span_ac[1]<=t_span[1]:
     # print('W_c' ,W_c_hat)
     # print('W_c_opt',W_c_opt)
     # print(W_a_hat)
-    br
+    # br
 
 #animationfunction(ani_vals, t_ac ,L)
 
