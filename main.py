@@ -104,12 +104,7 @@ Q_opt_lower=np.concatenate((Q_xu.T,Q_uu),1)
 Q_opt=np.concatenate((Q_opt_upper,Q_opt_lower),0)
 # print(Q_opt)
 W_c_opt=mat_to_vec_sym(Q_opt,n,m)
-# W_c_opt=mat_to_vec_sym(Q_opt,n,2)
 
-# print(W_c_opt)
-# test=vech_to_mat_sym(W_c_opt, n,2)
-# print(test)
-# br
 
 # W_c_hat = np.zeros(s)
 W_c_hat=W_c_opt
@@ -126,8 +121,8 @@ W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
 k=0
 
-alpha_c = 0
-alpha_a = 0
+alpha_c = 50
+alpha_a = 2
 explore=2
 k_max=int(T/dt)
 # print(k_max)
@@ -150,8 +145,8 @@ while t_span_ac[1]<=t_span[1]:
     u_hist=np.concatenate((u_hist, u), axis=1)
     # print(u_hist)
     # u_sys=u+ np.random.normal(0, explore, m,)
-    # u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
-    u_sys=u
+    u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
+    # u_sys=u
     # print(x_ac[-k])
     # print(x_ac[:,-k:])
     # print(x_ac)
