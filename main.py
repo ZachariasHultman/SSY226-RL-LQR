@@ -12,7 +12,7 @@ import actor
 
 T = 0.05  
 dt=0.001 # delta t [s]
-t_span =[0, 2]  # Time span for simulation
+t_span =[0, 3]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 n = 2
 m = 1
@@ -125,8 +125,8 @@ W_a_hat = np.atleast_2d(W_a_hat).T
 W_a_hat_old= W_a_hat
 k=0
 
-alpha_c = 0
-alpha_a = 0
+alpha_c = 50
+alpha_a = 2
 explore=2
 k_max=int(T/dt)
 # print(k_max)
@@ -145,12 +145,12 @@ while t_span_ac[1]<=t_span[1]:
     # print(x_ac)
 
     # Controll signals
-    u = np.matmul(W_a_hat.T,x_curr)
+    u = np.matmul(-W_a_hat.T,x_curr)
     u_hist=np.concatenate((u_hist, u), axis=1)
     # print(u_hist)
-    # u_sys=u+ np.random.normal(0, explore, m,)
+    u_sys=u+ np.random.normal(0, explore, m,)
     # u_sys = u + 0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
-    u_sys=u
+    # u_sys=u
     # print(x_ac[-k])
     # print(x_ac[:,-k:])
     # print(x_ac)
@@ -170,14 +170,17 @@ while t_span_ac[1]<=t_span[1]:
 
     # print(W_c_hat)
     # br
-
+    t_span_ac = (t_span_ac[1], t_span_ac[1] + dt)
     # System to be simulated
     x_prev=x_ac[:,-1:]
+
     x_1 = -x_prev[1]*dt + x_prev[0]
     x_2 = (-0.1 * x_prev[1] + u_sys)*dt + x_prev[1]
     x_curr = np.atleast_2d([x_1 , x_2])
+    # print(x_curr)
+    # br
 
-    t_span_ac = (t_span_ac[1], t_span_ac[1] + dt)
+    
     u_prev=u
         
     x_ac = np.concatenate((x_ac, x_curr), axis=1)
@@ -185,7 +188,7 @@ while t_span_ac[1]<=t_span[1]:
 
  
     e = norm_error(K_lqr, W_a_hat.T)
-    e_W_c=norm_error(W_c_opt,W_c_hat )
+    e_W_c=norm_error(W_c_opt,W_c_hat.T )
     error_W_c=np.concatenate((error_W_c, [e_W_c]), axis=0)
     error_K_ac = np.concatenate((error_K_ac, [e]), axis=0)
 

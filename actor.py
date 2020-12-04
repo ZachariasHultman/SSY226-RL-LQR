@@ -23,7 +23,7 @@ def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
     # Q_bar_uu = vech_to_mat_sym(Q_bar_uu,m)
 
     # compute actor error
-    e_a = W_a_hat.T @ x - np.linalg.pinv(Q_bar_uu) @ Q_bar_ux @ x
+    e_a = W_a_hat.T @ x + np.linalg.pinv(Q_bar_uu) @ Q_bar_ux @ x
     # print(W_a_hat)
     # print(np.linalg.pinv(Q_bar_uu) @ Q_bar_ux)
     # print(e_a)
