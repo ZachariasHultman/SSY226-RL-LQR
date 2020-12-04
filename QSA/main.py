@@ -91,7 +91,7 @@ def double_integrator_with_friction_noise(t, x, K):
     u = compute_u(K,x,t)
 
 
-    x_1_dot = -x2
+    x_1_dot = x2#-x2
     x_2_dot = -0.1 * x2 + u
 
     return [x_1_dot, x_2_dot]
@@ -120,7 +120,11 @@ vals_lqr = integrate.solve_ivp(double_integrator_with_friction_noise, t_span, x_
 
 time_offline = vals_lqr.t
 x_offline = vals_lqr.y
-
+plt.plot(time_offline, x_offline[0,:])
+plt.plot(time_offline, x_offline[1,:])
+print("hej")
+#plt.plot(u_offline)
+plt.show()
 print("shape u_offline", time_offline.shape)
 
 #Initialize
@@ -194,6 +198,8 @@ while (np.linalg.norm(dtheta)> tol):
 
     u_off = compute_u(Ke,x_off,t_off)
     d_off = cost_func(x_off,u_off,M,R)
+    print("x_off", x_off)
+    print("u_off", u_off)
     d_policy_off = cost_func(x_off,phi,M,R)
     ddf = (d_policy_off-d_policy_off_prev) / (t_off - t_off_prev)
     d_policy_off_prev = d_policy_off
@@ -299,6 +305,7 @@ while (np.linalg.norm(dtheta)> tol):
 ##====End of while loop
 
 #Plot functions:
+
 plt.plot(theta_record, t)
 plt.title("Plot of theta")
 plt.xlabel("time (t)")
