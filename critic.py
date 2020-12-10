@@ -15,10 +15,17 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     # print(x_hist[:,-1].reshape(2,1))
 
     U = np.concatenate((x_hist[:,-1].reshape(n,1).T, u_hist[:,-1].reshape(m,1).T),1).T
+    
 
     U_prev = np.concatenate((x_hist[:,0].reshape(n,1).T, u_hist[:,0].reshape(m,1).T),1).T
+
+    # if u_hist.shape[1] < 50 :
+    #     U_prev=U_prev*0
+    #     u_hist=u_hist*0
     # print('INTERNAL U',U)
     # print('INTERNAL U_PREV',U_prev)
+    # print(u_hist)
+    # br
 
     sigma = sigma_fun(U, U_prev, n, m)
    
@@ -27,30 +34,31 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m):
     # The integral term is calculated by assumptions that self-defined matrices M and R are diagonal
     # and assumption that the integration is discrete with time step T and only two points of evaluation
     
+
+    
     int_term=np.zeros(x_hist.shape[1])
     for k in range(x_hist.shape[1]):
         int_term[k] = x_hist[:,k].reshape(n,1).T @ M @ x_hist[:,k].reshape(n,1) + (u_hist[:,k].reshape(m,1).T @ R @ u_hist[:,k].reshape(m,1))
 
-    # print(int_term.shape)
-    # print(int_term)
-    # print(int_term)
     int_term=np.trapz(int_term,dx=dt)
-    print('int term',int_term)
-
+    # print('int term',int_term)
+    # print('U',W_c_hat.T @ kronecker(U, U,n,m))
+    # print('U_prev',W_c_hat.T @ kronecker(U_prev, U_prev,n,m))
     
-    # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18)
-    e = W_c_hat.T @ kronecker(U, U,n,m) + 0.5 *int_term - W_c_hat.T @ kronecker(U_prev, U_prev,n,m)
+    # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18). 
+    e = W_c_hat.T @ kronecker(U, U,n,m) + int_term - W_c_hat.T @ kronecker(U_prev, U_prev,n,m)
     # e=np.abs(e)
     # print(e)
-    # print(sigma)
+    
+    # print('sigma',sigma / ((1 + sigma.T @ sigma)**2))
     # print(sigma.T @ sigma)
     # br
 
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
-    # W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
-    W_c_hat_dot = -alpha_c * sigma * e.T
+    W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
+    # W_c_hat_dot = -alpha_c * sigma * e.T
 
     # print('W_c_hat_dot',W_c_hat_dot)
 

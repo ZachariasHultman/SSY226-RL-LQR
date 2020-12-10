@@ -71,8 +71,10 @@ def sigma_fun(U_curr, U_prev, n, m):
 
     sigma_pt1 = kronecker(U_curr, U_curr, n, m)
     sigma_pt2 = kronecker(U_prev, U_prev, n, m)
+    
 
     sigma = sigma_pt1 - sigma_pt2
+    
     return sigma
 
 
