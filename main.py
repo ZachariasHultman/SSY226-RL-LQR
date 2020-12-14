@@ -15,9 +15,9 @@ T = 0.05
 dt=0.001 # delta t [s]
 t_span =[0, 10]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
-
-n = 2
-m = 1
+# ---------------------------------------------------------------------------------
+# n = 3
+# m = 2
 # sys_func=test_sys_ODE
 # A =np.array([[-1.01887, -0.90506, -0.00215],
 #      [0.82225, -1.07741, -0.17555],
@@ -27,6 +27,10 @@ m = 1
 
 # M = 2*np.eye(n)
 # R = 1*np.eye(m)
+# x_init=np.array([0.1, 0.1, -0.1])
+# --------------------------------------------------------------------------------
+n = 2
+m = 1
 sys_func=double_integrator_with_friction_ODE
 A = np.array([[0, -1],
                 [0, -0.1]])
@@ -35,40 +39,8 @@ M = np.array([[ 1,         0],
             [ 0,         1]])
 R = np.array([0.1])
 R= R.reshape(m,m)
-
-
-# M_p = 0.5  # cart mass
-# m_p = 0.2  # pendulum mass
-# g = 9.81  # gravity
-# L = 2  # pendulum length
-# f = 0.1  # friction
-# b= 0.5 #friction for cart
-# F = 1  # control input [N]
-
-# x_init = [0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot
-# x_init_lqr=[0, 0, 0.05*np.pi, 0]  # Initial state. pos, vel, theta, thetadot for linearized system~
-
-# M = np.array([[ 1,         0, 0,0],
-#             [ 0,         1,0,0],
-#             [ 0,         0,100,0
-            # [ 0,         0,0,100]]])
-
-# R = 0.001
-
-# K = cart_pendulum_lin_lqr_gain(L, m_p, M_p, g, f, b, M, R)  # LQR gain for linearized system
-# args_lqr = (K, L, m_p, M_p, g, f, b)  # arguments for controlled linear system
-# vals_lqr = integrate.solve_ivp(cart_pendulum_sim_lqr, t_span, x_init_lqr, args=args_lqr, t_eval=t_eval)
-# ___________________________________________________________________________________________________________________________________________
-# yay =np.asarray([0.1000,    0.1000,   -0.1000,    0.9821,    0.5783,    0.2344,    0.8106,    0.4513,    0.2500,    0.9554,    0.1427,    0.5126,    0.9719,    0.6483,    0.6147,    0.4697,    0.5778,    0.9113,    0.3762, 0.2736, 0.2288,  0.4446,   0.4235,   0.6275,0])
-# W_c_hat = yay[3:18]
-# W_a_hat = yay[18:24].reshape(n,m)
-# print(W_c_hat)
-# print(W_a_hat)
-
-
-# x_init=np.array([0.1, 0.1, -0.1])
-
-x_init=[0, 1]  # Initial state. pos, vel, theta, thetadot for linearized system
+x_init=[0, 1]  # Initial state
+# -------------------------------------------------------------------------------------
 
 # K_lqr, P = double_integrator_lin_lqr_gain(M, R)
 K_lqr, P, E =ctrl.lqr(A, B, M, R)
