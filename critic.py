@@ -5,13 +5,28 @@ from tools import vech_to_mat_sym, sigma_fun, mat_to_vec_sym
 # equation 20 is the following function
 
 
-def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term):
+def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
 
 
     U = np.concatenate((x_hist[:,-1].reshape(n,1).T, u_hist[:,-1].reshape(m,1).T),1).T
 
-    U_prev = np.concatenate((x_hist[:,0].reshape(n,1).T, u_hist[:,0].reshape(m,1).T),1).T
+    x_tmp=[]
+    for dim in range(x_hist.shape[0]):
+        x_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(x_hist[dim])))
+    x_interp=np.asarray(x_tmp).reshape(n,1)
+    u_tmp=[]
+    for dim in range(u_hist.shape[0]):
+       u_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(u_hist[dim])[1:]))
+    u_interp=np.asarray(u_tmp).reshape(m,1)
 
+
+
+    # U_prev = np.concatenate((x_hist[:,0].reshape(n,1).T, u_hist[:,0].reshape(m,1).T),1).T
+    # print('old',U_prev)
+
+    U_prev = np.concatenate((x_interp.reshape(n,1).T, u_interp.reshape(m,1).T),1).T
+    # print(U_prev)
+    # br
     # U_prev = np.concatenate((np.trapz(x_hist,dx=dt).reshape(n,1).T, np.trapz(u_hist,dx=dt).reshape(m,1).T),1).T
 
     n=x_hist[:,-1].shape[0]
@@ -54,7 +69,7 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term):
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18). 
     # e = 0.5* ( W_c_hat.T @ U_kron  + int_term - W_c_hat.T @ U_prev_kron)
     e=0.5*( U.T@Q@U - U_prev.T@Q@U_prev +  int_term)  
-    print(e)
+    # print(e)
     
     # print('sigma',sigma)
     # br
