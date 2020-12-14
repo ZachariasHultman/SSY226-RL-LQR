@@ -122,6 +122,8 @@ def vech_to_mat_sym(a, n,m):
 
     for tmp in range(n):
         A[tmp,tmp]=a[tmp]
+        # print(A[tmp,tmp])
+        A[tmp,tmp]=A[tmp,tmp]*0.5
         
     c=m
     for j in range(n,n+m):
@@ -134,8 +136,8 @@ def vech_to_mat_sym(a, n,m):
     c=n
     for j in range(n+m):
         for i in range(j+1,n+m):
-            A[i,j]=a[c]/2
-            A[j,i]=a[c]/2
+            A[i,j]=a[c]
+            A[j,i]=a[c]
             c+=1
     return A
 
@@ -161,7 +163,7 @@ def mat_to_vec_sym(A, n, m):
     c=n
     for j in range(n+m):
         for i in range(j+1,n+m):
-            a[c]=A[i,j]*2
+            a[c]=A[i,j]
             c+=1
     return a
 

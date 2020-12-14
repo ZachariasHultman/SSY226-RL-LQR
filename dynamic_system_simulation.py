@@ -74,6 +74,36 @@ def double_integrator_with_friction2_ODE(x,t,u):
 
     return [x_1_dot, x_2_dot]
 
+def test_sys_ODE(x,t,K):
+    x=x.reshape(3,1)
+    A =np.array([[-1.01887, -0.90506, -0.00215],
+     [0.82225, -1.07741, -0.17555],
+     [0, 0, -1]])
+
+    B = np.array([[0, 0, 1], [1, 1, 1]]).T
+
+    u = -np.matmul(K, x)
+
+    # print(u)
+    x_dot = A @ x + B @ u
+    x_dot=np.ravel(x_dot)
+
+    return x_dot
+
+def test_sys2_ODE(x,t,u):
+    x=x.reshape(3,1)
+
+    A =np.array([[-1.01887, -0.90506, -0.00215],
+     [0.82225, -1.07741, -0.17555],
+     [0, 0, -1]])
+
+    B = np.array([[0, 0, 1], [1, 1, 1]]).T
+
+    x_dot = A @ x + B @ u.T
+    x_dot=np.ravel(x_dot)
+
+    return x_dot
+
 def cart_pendulum_sim_lqr(t ,x, K, L=1., m=1., M = 1., g=9.81 , f=0 ,b=0):
     """
     Function for simulating a controlled cart pendulum linerized around theta=0

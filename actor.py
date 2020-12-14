@@ -6,8 +6,22 @@ def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
     # print(W_c_hat)
     # W_c_hat=[1 ,2 ,3 ,4 ,5 ,6]
     # print(W_c_hat)
-    
-    Q_bar = vech_to_mat_sym(W_c_hat, n,m)
+    # print('start')
+    # print(W_c_hat)
+    Q_bar=np.zeros((n+m,n+m))
+    row,col=np.tril_indices(n+m)
+
+    count=0
+    for r,c in zip(col,row):
+        if r==c:
+            Q_bar[c,r]=W_c_hat[count]*0.5
+        else:
+            Q_bar[c,r]=W_c_hat[count]
+        count+=1
+    Q_bar=Q_bar+Q_bar.T
+
+
+    # Q_bar = vech_to_mat_sym(W_c_hat, n,m)
     
     # print(Q_bar)
     # Q_bar=Q_bar*2
@@ -40,18 +54,3 @@ def approx_update(x, W_a_hat, W_c_hat, n, m, alpha_a):
 
 
 
-def Q_uu(n,m,W_hat):
-
-    # Extract Q_uu from Wc on vector form from
-    q_vec = W_hat[int(n * (n + 1) / 2 + 1 + n * m):int((n + m) * (n + m + 1) / 2)]
-    # Reshape to matrix form
-    q_uu = vech_to_mat_sym(q_vec, m)
-    return q_uu
-
-def Q_xu(n,m,W_hat):
-
-    # Extract Q_xu from Wc on vector form from
-    q_vec = W_hat[int(n * (n + 1) / 2 + 1):int(n * (n + 1) / 2 + n * m)]
-    # Reshape to matrix form
-    q_xu = vech_to_mat(q_vec, n, m)
-    return q_xu
