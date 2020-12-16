@@ -114,27 +114,32 @@ print('W_a error',e_a)
 e_c = norm_error(W_c_opt, W_c_hat)
 print('W_c error',e_c)
 
-plt.figure()
+plt.figure(1)
 # Plotting controlled linear system
 plt.subplot(311)
 plt.plot(t_eval,vals_lqr[:,0].T,label='x1')
 plt.plot(t_eval,vals_lqr[:,1].T,label='x2')
 plt.plot(t_eval,vals_lqr[:,2].T,label='x3')
 plt.legend(loc="upper left")
-
+# Plotting learnt controlled linear system
 plt.subplot(312)
 plt.plot(t_eval,vals_lqr_new[:,0].T,label='x1')
 plt.plot(t_eval,vals_lqr_new[:,1].T,label='x2')
 plt.plot(t_eval,vals_lqr_new[:,2].T,label='x3')
 plt.legend(loc="upper left")
 
-
-# Plotting controlled linear system
+# Plotting simulated linear system
 plt.subplot(313)
-plt.plot(vals.y,label='x1')
-# plt.plot(t_ac,x_ac[1,:].T,label='x2')
-# plt.plot(t_ac,x_ac[2,:].T,label='x3')
+plt.plot(vals.t,vals.y[0,:],label='x1')
+plt.plot(vals.t,vals.y[1,:],label='x2')
+plt.plot(vals.t,vals.y[2,:],label='x3')
 plt.legend(loc="upper left")
+# plt.show()
+
+states_num=[s for s in range(1,len(states)+1)]
+plt.figure(2)
+plt.plot(vals.y)
+plt.legend(states_num)
 plt.show()
 
 
