@@ -7,17 +7,13 @@ from tools import vech_to_mat_sym, sigma_fun, mat_to_vec_sym
 
 def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
 
-    # print(x_hist[:,-1])
-    # print(u_hist)
+
     U = np.concatenate((x_hist[:,-1].reshape(n,1).T, u_hist[:,-1].reshape(m,1).T),1).T
     if t[-1]<T:
         x_interp=x_hist[:,-1].reshape(n,1)
         u_interp=u_hist[:,-1].reshape(m,1)*0
     else:
-        # print('kuken')
         x_tmp=[]
-        # print(np.asarray(t).shape)
-        # print(np.ravel(u_hist[0]).shape)
         for dim in range(x_hist.shape[0]):
             x_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(x_hist[dim])))
         x_interp=np.asarray(x_tmp).reshape(n,1)
@@ -26,7 +22,8 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
             u_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(u_hist[dim])))
         u_interp=np.asarray(u_tmp).reshape(m,1)
 
-
+    # print('interp',x_interp)
+    # print('curr',x_hist[:,-1])
 
     # U_prev = np.concatenate((x_hist[:,0].reshape(n,1).T, u_hist[:,0].reshape(m,1).T),1).T
     # print('old',U_prev)

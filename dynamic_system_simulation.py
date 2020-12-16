@@ -17,7 +17,7 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     
     W_a_hat = np.reshape(np.asarray(y[n:n+n*m]),(n,m))
    
-    print("TIME: "+str(t))
+    # print("TIME: "+str(t))
     W_c_hat = y[n+n*m:n+n*m+s]
     int_term=y[-1]
     

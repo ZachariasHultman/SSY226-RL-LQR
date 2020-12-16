@@ -61,7 +61,7 @@ K_lqr, P, E =ctrl.lqr(A, B, M, R)
 # P, L_CARE, K_lqr =ctrl.care(A, B, M)
 P_CARE, L_CARE, U_CARE =ctrl.care(A, B, M)
 P_DARE, L_DARE, U_DARE =ctrl.dare(A, B, M,R)
-print(K_lqr)
+# print(K_lqr)
 
 # the second has to altered if other system is used
 # vals_lqr = integrate.solve_ivp(sys_func, t_span, x_init, t_eval=t_eval, args=args)
@@ -85,7 +85,7 @@ print('W_c_opt',W_c_opt)
 delta=1
 alpha_a_upper=(1/delta*np.max(np.linalg.eigvals(np.linalg.inv(np.atleast_2d(R)))))*((2*np.min(np.linalg.eigvals(M+(Q_xu@ np.linalg.inv(np.atleast_2d(R))@ Q_xu.T))))-np.max(np.linalg.eigvals(Q_xu@Q_xu.T)))
 print('alpha_a_upper',alpha_a_upper)
-W_a_opt= (-np.linalg.pinv(R)@B.T@P).T 
+W_a_opt= (np.linalg.pinv(R)@B.T@P).T 
 print('W_a_opt',W_a_opt)
 
 # if double integral is used insted
@@ -104,13 +104,15 @@ s = int(1 / 2 * ((n + m) * (n + m + 1)))
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
 vals= integrate.solve_ivp(func, t_span, states, args=args_ac)
 W_a_hat=vals.y[-1,n:n+n*m]
+W_c_hat=vals.y[-1,n+n*m:n+n*m+s]
 
 vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 # vals_lqr_new=integrate.odeint(sys_func, [0, 1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 
-
-e = norm_error(W_a_opt, np.asarray(-W_a_hat).reshape(n,m))
-print('W_a error',e)
+e_a = norm_error(W_a_opt, np.asarray(W_a_hat).reshape(n,m))
+print('W_a error',e_a)
+e_c = norm_error(W_c_opt, W_c_hat)
+print('W_c error',e_c)
 
 plt.figure()
 # Plotting controlled linear system
