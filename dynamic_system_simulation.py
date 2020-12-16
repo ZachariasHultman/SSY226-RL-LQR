@@ -5,7 +5,61 @@ import critic
 import actor
 
 
-def func(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u):
+def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
+    global t_ac
+    global x_ac
+    global u_hist
+
+    t_span_ac=(t,t)
+    s = int(1 / 2 * ((n + m) * (n + m + 1)))
+
+    x =  np.reshape(np.asarray(y[:n]),(n,1))
+    
+    W_a_hat = np.reshape(np.asarray(y[n:n+n*m]),(n,m))
+   
+    print("TIME: "+str(t))
+    W_c_hat = y[n+n*m:n+n*m+s]
+    int_term=y[-1]
+    
+    u = np.matmul(W_a_hat.T,x)
+    if t_span_ac[1] >= 3*int(tf/5):
+        explore=0
+
+    u_sys = u + explore*0.1*np.exp(-0.0001*t_span_ac[1])*1*(np.sin(t_span_ac[1])**2*np.cos(t_span_ac[1])+np.sin(2*t_span_ac[1])**2*np.cos(0.1*t_span_ac[1])+np.sin(-1.2*t_span_ac[1])**2*np.cos(0.5*t_span_ac[1])+np.sin(t_span_ac[1])**5+np.sin(1.12*t_span_ac[1])**2+np.cos(2.4*t_span_ac[1])*np.sin(2.4*t_span_ac[1])**3)
+
+    if t==0:
+        x_ac=x
+        t_ac=[t_span_ac[1]]
+        u_hist=np.zeros(m).reshape(m,1)
+    else:
+        t_ac.append(t_span_ac[1])
+        x_ac = np.concatenate((x_ac, x), axis=1)
+        u_hist=np.concatenate((u_hist, u), axis=1)
+
+    # print("u :", u)
+    x_dot = (A @ x + B @ u_sys).tolist()
+    W_c_hat_dot = critic.approx_update(x_ac,u_hist, W_c_hat, alpha_c, M, R, dt, n, m,int_term,t_ac,T)
+    
+    W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)   
+    W_a_hat_dot=W_a_hat_dot.flatten()
+    
+    int_term_dot = (x.T @ M @x + u.T @ R @ u).tolist()
+
+    states = [s[0] for s in x_dot]
+    states += [s for s in W_a_hat_dot]
+    states += [s for s in W_c_hat_dot]
+    states += [s[0] for s in int_term_dot]
+    
+
+
+    # print('INTERNAL STATES',states)
+    # u_prev=u
+    # x_prev=x
+    # print(u_prev)
+    # print(x_prev)
+    return states
+
+def func_old(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explore,u):
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x = np.expand_dims(y[:n], 1)
     W_a_hat = y[n:n+n*m]
@@ -91,6 +145,20 @@ def test_sys_ODE(x,t,K):
     return x_dot
 
 def test_sys2_ODE(x,t,u):
+    x=x.reshape(3,1)
+
+    A =np.array([[-1.01887, -0.90506, -0.00215],
+     [0.82225, -1.07741, -0.17555],
+     [0, 0, -1]])
+
+    B = np.array([[0, 0, 1], [1, 1, 1]]).T
+
+    x_dot = A @ x + B @ u.T
+    x_dot=np.ravel(x_dot)
+
+    return x_dot
+
+def test_sys2(t,x,u):
     x=x.reshape(3,1)
 
     A =np.array([[-1.01887, -0.90506, -0.00215],

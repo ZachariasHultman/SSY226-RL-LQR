@@ -7,17 +7,24 @@ from tools import vech_to_mat_sym, sigma_fun, mat_to_vec_sym
 
 def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
 
-
+    # print(x_hist[:,-1])
+    # print(u_hist)
     U = np.concatenate((x_hist[:,-1].reshape(n,1).T, u_hist[:,-1].reshape(m,1).T),1).T
-
-    x_tmp=[]
-    for dim in range(x_hist.shape[0]):
-        x_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(x_hist[dim])))
-    x_interp=np.asarray(x_tmp).reshape(n,1)
-    u_tmp=[]
-    for dim in range(u_hist.shape[0]):
-       u_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(u_hist[dim])[1:]))
-    u_interp=np.asarray(u_tmp).reshape(m,1)
+    if t[-1]<T:
+        x_interp=x_hist[:,-1].reshape(n,1)
+        u_interp=u_hist[:,-1].reshape(m,1)*0
+    else:
+        # print('kuken')
+        x_tmp=[]
+        # print(np.asarray(t).shape)
+        # print(np.ravel(u_hist[0]).shape)
+        for dim in range(x_hist.shape[0]):
+            x_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(x_hist[dim])))
+        x_interp=np.asarray(x_tmp).reshape(n,1)
+        u_tmp=[]
+        for dim in range(u_hist.shape[0]):
+            u_tmp.append(np.interp(t[-1]-T,np.asarray(t),np.ravel(u_hist[dim])))
+        u_interp=np.asarray(u_tmp).reshape(m,1)
 
 
 
@@ -65,11 +72,13 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
 
     # int_term=np.trapz(int_term,dx=dt)
 
+    # print(U.T@Q@U )
+    # print(U_prev.T@Q@U_prev)
+    # print(int_term)
 
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18). 
     # e = 0.5* ( W_c_hat.T @ U_kron  + int_term - W_c_hat.T @ U_prev_kron)
     e=0.5*( U.T@Q@U - U_prev.T@Q@U_prev +  int_term)  
-    # print(e)
     
     # print('sigma',sigma)
     # br
@@ -77,16 +86,16 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
-    # W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
-    W_c_hat_dot = -alpha_c * sigma * e.T
+    W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
+    # W_c_hat_dot = -alpha_c * sigma * e.T
 
-    # print('W_c_hat_dot',W_c_hat_dot)
+    # print('W_c_hat_dot',W_c_hat_dot.shape)
 
     # br
     # W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
     # Q_bar_tilde = vech_to_mat_sym(W_c_tilde, n + m)
     # Q_xu_tilde = Q_bar_tilde[n:,:n].T
 
-    return W_c_hat_dot #, W_c_tilde_dot, Q_xu_tilde
+    return np.ravel(W_c_hat_dot) #, W_c_tilde_dot, Q_xu_tilde
 
 
