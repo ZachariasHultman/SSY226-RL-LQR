@@ -137,8 +137,13 @@ plt.legend(loc="upper left")
 # plt.show()
 
 states_num=[s for s in range(1,len(states)+1)]
+
 plt.figure(2)
-plt.plot(vals.y)
+for ind in range(len(vals.y)):
+     plt.plot(vals.t,vals.y[ind,:])
+# plt.plot(vals.t,vals.y[1,:])
+# plt.plot(vals.t,vals.y[2,:])
+
 plt.legend(states_num)
 plt.show()
 
