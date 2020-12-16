@@ -9,6 +9,7 @@ def norm_error(true_value, approx_value):
     
     e = 1/(np.linalg.norm(true_value))*np.linalg.norm(approx_value-true_value)
 
+
     return e
 
 
