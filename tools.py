@@ -8,6 +8,18 @@ import control as ctrl
 def norm_error(true_value, approx_value):
     
     e = 1/(np.linalg.norm(true_value))*np.linalg.norm(approx_value-true_value)
+    # e = np.linalg.norm(approx_value-true_value)
+
+
+    return e
+
+def norm_error_vec(true_value, approx_value):
+    e = []
+
+    for a_val in approx_value:
+        e.append( 1/(np.linalg.norm(true_value))*np.linalg.norm(a_val.reshape(true_value.shape)-true_value) )
+        # e.append( np.linalg.norm(a_val.reshape(true_value.shape)-true_value) )
+
 
 
     return e

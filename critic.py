@@ -63,19 +63,14 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
     # The integral term is calculated by assumptions that self-defined matrices M and R are diagonal
     # and assumption that the integration is discrete with time step T and only two points of evaluation
 
-    # int_term=np.zeros(x_hist.shape[1])
-    # for k in range(x_hist.shape[1]):
-    #     int_term[k] = x_hist[:,k].reshape(n,1).T @ M @ x_hist[:,k].reshape(n,1) + (u_hist[:,k].reshape(m,1).T @ R @ u_hist[:,k].reshape(m,1))
-
-    # int_term=np.trapz(int_term,dx=dt)
-
-    # print(U.T@Q@U )
-    # print(U_prev.T@Q@U_prev)
-    # print(int_term)
 
     # Using integral RL gives error of (Bellman) value function as (eq.17 to eq.18). 
     # e = 0.5* ( W_c_hat.T @ U_kron  + int_term - W_c_hat.T @ U_prev_kron)
-    e=0.5*( U.T@Q@U - U_prev.T@Q@U_prev +  int_term)  
+    # print('U.T@Q@U',U.T@Q@U)
+    # print('U_prev.T@Q@U_prev',U_prev.T@Q@U_prev)
+    # print('int_term',0.5*int_term)
+    e= U.T@Q@U - U_prev.T@Q@U_prev +  0.5*int_term
+    # print('e',e)
     
     # print('sigma',sigma)
     # br
@@ -86,7 +81,7 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
     W_c_hat_dot = -alpha_c * sigma / ((1 + sigma.T @ sigma)**2) * e.T
     # W_c_hat_dot = -alpha_c * sigma * e.T
 
-    # print('W_c_hat_dot',W_c_hat_dot.shape)
+    # print('W_c_hat_dot',W_c_hat_dot)
 
     # br
     # W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)

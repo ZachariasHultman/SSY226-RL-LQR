@@ -5,7 +5,7 @@ import control as ctrl
 from dynamic_system_simulation import cart_pendulum_sim_lqr
 from dynamic_system_simulation import cart_pendulum_sim_lqr2
 from dynamic_system_simulation import func, double_integrator_with_friction, double_integrator_with_friction2, double_integrator_with_friction_ODE, double_integrator_with_friction2_ODE, test_sys_ODE, test_sys2_ODE, test_sys2
-from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec_sym, vech_to_mat_sym
+from tools import cart_pendulum_lin_lqr_gain, double_integrator_lin_lqr_gain, norm_error, mat_to_vec_sym, vech_to_mat_sym, norm_error_vec
 from AnimationFunction import animationfunction
 import critic
 import actor
@@ -16,13 +16,13 @@ global u_hist
 
 T = 0.05
 dt=0.001 # delta t [s]
-t_span =[0, 40]  # Time span for simulation
+t_span =[0, 800]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
 m = 2
 sys_func=test_sys_ODE
-A =np.array([[-1.01887, -0.90506, -0.00215],
+A =np.array([[-1.01887, -0.90506, -0.0021],
      [0.82225, -1.07741, -0.17555],
      [0, 0, -1]])
 
@@ -90,9 +90,10 @@ print('W_a_opt',W_a_opt)
 
 # if double integral is used insted
 # W_a_hat=(W_a_opt+1).tolist()
+# W_a_hat=(W_a_opt+1).reshape(n*m).tolist()[0]
 # W_c_hat=W_c_opt+1
 # states=x_init
-# states += [s[0] for s in W_a_hat]
+# states += [s for s in W_a_hat]
 # states += [s for s in W_c_hat]
 # states += [0]
 
@@ -102,9 +103,9 @@ alpha_a = 2
 explore=1
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
-vals= integrate.solve_ivp(func, t_span, states, args=args_ac)
-W_a_hat=vals.y[-1,n:n+n*m]
-W_c_hat=vals.y[-1,n+n*m:n+n*m+s]
+vals= integrate.solve_ivp(func, t_span, states, args=args_ac,atol=0.00000001,rtol=0.000000001)
+W_a_hat=vals.y[n:n+n*m,-1]
+W_c_hat=vals.y[n+n*m:n+n*m+s,-1]
 
 vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 # vals_lqr_new=integrate.odeint(sys_func, [0, 1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
@@ -114,37 +115,60 @@ print('W_a error',e_a)
 e_c = norm_error(W_c_opt, W_c_hat)
 print('W_c error',e_c)
 
+
+e_a = norm_error_vec(W_a_opt, np.array(vals.y[n:n+n*m,:]).T)
+# print('W_a error',e_a)
+e_c = norm_error_vec(W_c_opt, np.array(vals.y[n+n*m:n+n*m+s,:]).T)
+# print('W_c error',e_c)
+
+
 plt.figure(1)
 # Plotting controlled linear system
-plt.subplot(311)
+ground_truth = plt.subplot(311)
+ground_truth.set_title('Well tuned controlled system')
 plt.plot(t_eval,vals_lqr[:,0].T,label='x1')
 plt.plot(t_eval,vals_lqr[:,1].T,label='x2')
 plt.plot(t_eval,vals_lqr[:,2].T,label='x3')
-plt.legend(loc="upper left")
+plt.legend(loc="upper right")
 # Plotting learnt controlled linear system
-plt.subplot(312)
+simulation = plt.subplot(313)
+simulation.set_title('Learnd controller applied to system')
 plt.plot(t_eval,vals_lqr_new[:,0].T,label='x1')
 plt.plot(t_eval,vals_lqr_new[:,1].T,label='x2')
 plt.plot(t_eval,vals_lqr_new[:,2].T,label='x3')
-plt.legend(loc="upper left")
+plt.legend(loc="upper right")
 
 # Plotting simulated linear system
-plt.subplot(313)
+simulation = plt.subplot(312)
+simulation.set_title('Simulated system')
 plt.plot(vals.t,vals.y[0,:],label='x1')
 plt.plot(vals.t,vals.y[1,:],label='x2')
 plt.plot(vals.t,vals.y[2,:],label='x3')
+plt.legend(loc="upper right")
+# # plt.show()
+plt.figure(4)
+
+plt.plot(e_a,label='e_a')
+plt.plot(e_c,label='e_c')
 plt.legend(loc="upper left")
-# plt.show()
+
 
 states_num=[s for s in range(1,len(states)+1)]
 
-plt.figure(2)
+fig2=plt.figure(2)
 for ind in range(len(vals.y)):
-     plt.plot(vals.t,vals.y[ind,:])
+    plt.plot(vals.t,vals.y[ind,:])
+fig2.suptitle('State evolution')
+
 # plt.plot(vals.t,vals.y[1,:])
 # plt.plot(vals.t,vals.y[2,:])
 
 plt.legend(states_num)
+
+plt.figure(3)
+for ind in np.arange(n,n+n*m,1):
+     plt.plot(vals.t,vals.y[ind,:])
+
 plt.show()
 
 
