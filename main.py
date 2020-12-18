@@ -15,7 +15,7 @@ global u_hist
 
 
 T = 0.05
-dt=0.001 # delta t [s]
+dt=0.000001 # delta t [s]
 t_span =[0, 800]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ alpha_a = 2
 explore=1
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
-vals= integrate.solve_ivp(func, t_span, states, args=args_ac,atol=0.00000001,rtol=0.000000001)
+vals= integrate.solve_ivp(func, t_span, states,t_eval=t_eval, args=args_ac)
 W_a_hat=vals.y[n:n+n*m,-1]
 W_c_hat=vals.y[n+n*m:n+n*m+s,-1]
 
