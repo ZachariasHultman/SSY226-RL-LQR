@@ -103,10 +103,10 @@ alpha_a = 2
 explore=1
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
-vals= integrate.solve_ivp(func, t_span, states,t_eval=t_eval, args=args_ac)
+vals= integrate.solve_ivp(func, t_span, states, args=args_ac)
 W_a_hat=vals.y[n:n+n*m,-1]
 W_c_hat=vals.y[n+n*m:n+n*m+s,-1]
-
+print(vals.t)
 vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 # vals_lqr_new=integrate.odeint(sys_func, [0, 1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 
@@ -141,9 +141,9 @@ plt.legend(loc="upper right")
 # Plotting simulated linear system
 simulation = plt.subplot(312)
 simulation.set_title('Simulated system')
-plt.plot(vals.t,vals.y[0,:],label='x1')
-plt.plot(vals.t,vals.y[1,:],label='x2')
-plt.plot(vals.t,vals.y[2,:],label='x3')
+plt.plot(vals.y[0,:],label='x1')
+plt.plot(vals.y[1,:],label='x2')
+plt.plot(vals.y[2,:],label='x3')
 plt.legend(loc="upper right")
 # # plt.show()
 plt.figure(4)
@@ -157,7 +157,7 @@ states_num=[s for s in range(1,len(states)+1)]
 
 fig2=plt.figure(2)
 for ind in range(len(vals.y)):
-    plt.plot(vals.t,vals.y[ind,:])
+    plt.plot(vals.y[ind,:])
 fig2.suptitle('State evolution')
 
 # plt.plot(vals.t,vals.y[1,:])
@@ -167,7 +167,7 @@ plt.legend(states_num)
 
 plt.figure(3)
 for ind in np.arange(n,n+n*m,1):
-     plt.plot(vals.t,vals.y[ind,:])
+     plt.plot(vals.y[ind,:])
 
 plt.show()
 

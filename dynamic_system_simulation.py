@@ -19,9 +19,9 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     W_c_hat = y[n+n*m:n+n*m+s]
     int_term=y[-1]
     u = W_a_hat.T@x
-    time_ratio=(6*tf/10)
+    time_ratio=(4*tf/10)
     if t >= time_ratio:
-
+        # print('HÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄR')
         explore=0
     u_sys = u + explore*0.1*np.exp(-0.0001*t)*1*(np.sin(t)**2*np.cos(t)+np.sin(2*t)**2*np.cos(0.1*t)+np.sin(-1.2*t)**2*np.cos(0.5*t)+np.sin(t)**5+np.sin(1.12*t)**2+np.cos(2.4*t)*np.sin(2.4*t)**3)
     # u_sys=u+ np.random.normal(0, explore, 1,)
