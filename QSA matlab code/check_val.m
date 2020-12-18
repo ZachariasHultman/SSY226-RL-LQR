@@ -10,7 +10,7 @@ for i = 1:iter
    x(:,i+1) = A*x(:,i) + B*u(:,i) ;
    
    if i< 60
-       noise = GenerateNoise(t(:,i));
+       noise = 0;%GenerateNoise(t(:,i));
    else
        noise = 0;
    end
