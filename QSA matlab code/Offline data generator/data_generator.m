@@ -11,11 +11,12 @@ M = eye(n);
 R = 10*eye(m);
 
 iter = 1e4;%1e5;
-h = 0.01;%1e-5;
+h = 0.001;%1e-5;
 
 %Discretize system
-A = expm(Ac);
+A = expm(Ac*h);
 B = pinv(Ac)*(A-eye(n))*Bc;
+
 
 % %Undiscretized system
 % A = Ac;
@@ -24,8 +25,12 @@ B = pinv(Ac)*(A-eye(n))*Bc;
 %Stationary solution to Ricatti equation:
 
 % [X,Ke,L] = icare(A,B,M,R,[],[]);
-[X,Ke,L] = idare(A,B,M,R,[],[]);
+[X,Ko,L] = idare(A,B,M,R,[],[]);
 Ke = [-1 2];
+
+disp("Eig is:")
+eig(A-B*Ke)
+eig(A-B*Ko)
 
 x_offline = zeros(n,iter);
 u_offline = zeros(m,iter);
@@ -48,7 +53,7 @@ plot(t,x_offline)
 hold off
 legend("u","x_1","x_2")
 % TT = [t', x_offline', u_offline'];
-save('offlinedata.mat','x_offline', 'u_offline', 'all_amp', 'all_freq', 'all_phase', 'Ke', 'A', 'B', 't')
+save('offlinedata.mat','x_offline', 'u_offline', 'all_amp', 'all_freq', 'all_phase', 'h', 'Ke', 'Ko', 'A', 'B', 't')
 % FileData = load('offlinedata.mat');
 % % csvwrite('offlinedata1.csv', FileData.M);
 % 
@@ -77,8 +82,6 @@ save('offlinedata.mat','x_offline', 'u_offline', 'all_amp', 'all_freq', 'all_pha
 % for i = 1:24
 %    f(i) = append("f",num2str(i)); 
 % end
-
-
 
 function t = get_time(time_interval, iter)
 
