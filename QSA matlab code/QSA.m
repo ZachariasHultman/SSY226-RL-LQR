@@ -9,6 +9,7 @@ hold on
 plot(t,x_offline)
 hold off
 legend("u","x_1","x_2")
+title("Offline trajectory")
 
 %Continuous system
 % A = [0 -1; 0 -0.1];
@@ -18,13 +19,13 @@ legend("u","x_1","x_2")
 [n, m] = size(B);
 
 K = [-1 0];
-K = [5.2857    7.0493]; %1st value
-% K = [-1.3289    0.4997];   %2nd value
-% K = [-1.2661    0.4884];   %3rd value
-% K = [-1.2960    0.5564];   %4th value
-% K = [-1.2477    0.5265];   %5th value
-% K = [-1.2914    0.5656];   %6th value
-% K = [-1.2475    0.5297];   %7th value
+% K = [-0.3357   -0.1069]; %1st value
+% K = [0.1908    0.0038];   %2nd value
+% K = [0.6115    0.0938];   %3rd value
+% K = [1.0470    0.1973];   %4th value
+% K = [-1.2286    0.5405];   %5th value
+% K = [-1.2283    0.5403];   %6th value
+% % K = [-1.2475    0.5297];   %7th value
 
 K_N = zeros(size(1,n));
 M = eye(n);
@@ -52,6 +53,7 @@ t_record = [];
 %============Start of while loop==========================
 count = 0;
 
+for j = 1:1
 while (norm(dtheta) > 1e-3)%(count<100)%
     
     iter = iter + 1;
@@ -92,7 +94,7 @@ while (norm(dtheta) > 1e-3)%(count<100)%
 
     dtheta  = -a * (zeta(:,iter)'*theta + b(:,iter))*zeta(:,iter);
 
-    theta = theta + dtheta;
+    theta = theta + h*dtheta;
     
     %Eq. 22:
     Q_phi = GetVec2mat(theta,n , m);
@@ -106,6 +108,7 @@ while (norm(dtheta) > 1e-3)%(count<100)%
     dtheta_record = [dtheta_record dtheta];
     phi_record = [phi_record phi];
     t_record = [t_record t_off];
+end
 end
 %============End of while loop============================
 disp("Feedback gain is: ")
