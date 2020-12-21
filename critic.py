@@ -9,6 +9,7 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
 
 
     U = np.concatenate((x_hist[:,-1].reshape(n,1).T, u_hist[:,-1].reshape(m,1).T),1).T
+    # print('U',U)
     if t[-1]<T:
         x_interp=x_hist[:,-1].reshape(n,1)
         u_interp=u_hist[:,-1].reshape(m,1)*0
@@ -23,6 +24,7 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
         u_interp=np.asarray(u_tmp).reshape(m,1)
 
     # print('interp',x_interp)
+    # print('u_interp',u_interp)
     # print('curr',x_hist[:,-1])
 
     # U_prev = np.concatenate((x_hist[:,0].reshape(n,1).T, u_hist[:,0].reshape(m,1).T),1).T

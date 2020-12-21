@@ -14,9 +14,9 @@ global x_ac
 global u_hist
 
 
-T = 0.05
-dt=0.000001 # delta t [s]
-t_span =[0, 800]  # Time span for simulation
+T = 0.001
+dt=0.0001 # delta t [s]
+t_span =[0, 600]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
@@ -103,8 +103,8 @@ alpha_a = 2
 explore=1
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
-vals= integrate.solve_ivp(func, t_span, states, args=args_ac)
-W_a_hat=vals.y[n:n+n*m,-1]
+vals= integrate.solve_ivp(func, t_span=t_span, y0=states, args=args_ac)
+W_a_hat=-1*vals.y[n:n+n*m,-1]
 W_c_hat=vals.y[n+n*m:n+n*m+s,-1]
 print(vals.t)
 vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
@@ -115,12 +115,10 @@ print('W_a error',e_a)
 e_c = norm_error(W_c_opt, W_c_hat)
 print('W_c error',e_c)
 
-
 e_a = norm_error_vec(W_a_opt, np.array(vals.y[n:n+n*m,:]).T)
 # print('W_a error',e_a)
 e_c = norm_error_vec(W_c_opt, np.array(vals.y[n+n*m:n+n*m+s,:]).T)
 # print('W_c error',e_c)
-
 
 plt.figure(1)
 # Plotting controlled linear system

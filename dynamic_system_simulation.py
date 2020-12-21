@@ -19,7 +19,7 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     W_c_hat = y[n+n*m:n+n*m+s]
     int_term=y[-1]
     u = W_a_hat.T@x
-    time_ratio=(4*tf/10)
+    time_ratio=(7*tf/10)
     if t >= time_ratio:
         # print('HÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄR')
         explore=0
@@ -42,16 +42,24 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     
     
     W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)   
-    W_a_hat_dot=W_a_hat_dot.flatten()
+    # W_a_hat_dot=W_a_hat_dot.flatten()
  
     int_term_dot = (x.T @ M @x + u.T @ R @ u).tolist()[0]
-    # print(int_term_dot)
+    # print(int_term)
     # print('x.T @ M @x',x.T @ M @x)
+    
 
     states = [s[0] for s in x_dot]
-    states += [s for s in W_a_hat_dot]
+    for s in W_a_hat_dot.T:
+        for ss in s:
+            states.append(ss)
     states += [s for s in W_c_hat_dot]
     states += [s for s in int_term_dot]
+  
+    # print(W_a_hat_dot)
+    # print(W_c_hat_dot)
+    # print(int_term_dot)
+    
 
     return states
 
@@ -73,6 +81,7 @@ def func_old(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explor
 
     states = x_dot
     states += [s for s in W_a_hat_dot]
+    
     states += [s for s in W_c_hat_dot]
     states += [s for s in W_c_tilde_dot]
 
@@ -81,6 +90,7 @@ def func_old(y,t,sysfunc, n, m, x_prev, u_prev, alpha_c, alpha_a, M, R, T,explor
     # x_prev=x
     # print(u_prev)
     # print(x_prev)
+    
     return states
 
 
