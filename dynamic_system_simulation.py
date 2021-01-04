@@ -9,16 +9,16 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     global t_ac
     global x_ac
     global u_hist
-
+    
     t_span_ac=(t,t)
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x =  np.reshape(np.asarray(y[:n]),(n,1))
     W_a_hat = np.reshape(np.asarray(y[n:n+n*m]),(n,m))
-
     # print("TIME: "+str(t))
     W_c_hat = y[n+n*m:n+n*m+s]
     int_term=y[-1]
     u = W_a_hat.T@x
+
     time_ratio=(7*tf/10)
     if t >= time_ratio:
         # print('HÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄR')
@@ -45,7 +45,8 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     # W_a_hat_dot=W_a_hat_dot.flatten()
  
     int_term_dot = (x.T @ M @x + u.T @ R @ u).tolist()[0]
-    # print(int_term)
+    # print(int_term_dot)
+    # # br
     # print('x.T @ M @x',x.T @ M @x)
     
 

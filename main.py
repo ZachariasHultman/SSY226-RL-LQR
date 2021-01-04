@@ -16,7 +16,7 @@ global u_hist
 
 T = 0.001
 dt=0.0001 # delta t [s]
-t_span =[0, 400]  # Time span for simulation
+t_span =[0, 600]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
@@ -88,6 +88,8 @@ print('alpha_a_upper',alpha_a_upper)
 W_a_opt= (np.linalg.pinv(R)@B.T@P).T 
 print('W_a_opt',W_a_opt)
 
+
+
 # if double integral is used insted
 # W_a_hat=(W_a_opt+1).tolist()
 # W_a_hat=(W_a_opt+1).reshape(n*m).tolist()[0]
@@ -107,6 +109,7 @@ vals= integrate.solve_ivp(func, t_span=t_span, y0=states, args=args_ac)
 W_a_hat=-1*vals.y[n:n+n*m,-1]
 W_c_hat=vals.y[n+n*m:n+n*m+s,-1]
 print(vals.t)
+
 vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 # vals_lqr_new=integrate.odeint(sys_func, [0, 1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 
@@ -118,7 +121,7 @@ print('W_c error',e_c)
 e_a = norm_error_vec(W_a_opt, np.array(vals.y[n:n+n*m,:]).T)
 # print('W_a error',e_a)
 e_c = norm_error_vec(W_c_opt, np.array(vals.y[n+n*m:n+n*m+s,:]).T)
-# print('W_c error',e_c)
+print('W_c error',e_c)
 
 plt.figure(1)
 # Plotting controlled linear system
@@ -139,9 +142,9 @@ plt.legend(loc="upper right")
 # Plotting simulated linear system
 simulation = plt.subplot(312)
 simulation.set_title('Simulated system')
-plt.plot(vals.y[0,:],label='x1')
-plt.plot(vals.y[1,:],label='x2')
-plt.plot(vals.y[2,:],label='x3')
+plt.plot(vals.t,vals.y[0,:],label='x1')
+plt.plot(vals.t,vals.y[1,:],label='x2')
+plt.plot(vals.t,vals.y[2,:],label='x3')
 plt.legend(loc="upper right")
 # # plt.show()
 plt.figure(4)
@@ -154,8 +157,8 @@ plt.legend(loc="upper left")
 states_num=[s for s in range(1,len(states)+1)]
 
 fig2=plt.figure(2)
-for ind in range(len(vals.y)):
-    plt.plot(vals.y[ind,:])
+for ind in range(len(vals.y)-1):
+    plt.plot(vals.t,vals.y[ind,:])
 fig2.suptitle('State evolution')
 
 # plt.plot(vals.t,vals.y[1,:])

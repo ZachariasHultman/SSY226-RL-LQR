@@ -71,12 +71,9 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
     # print('U.T@Q@U',U.T@Q@U)
     # print('U_prev.T@Q@U_prev',U_prev.T@Q@U_prev)
     # print('int_term',0.5*int_term)
-    e= U.T@Q@U - U_prev.T@Q@U_prev +  0.5*int_term
+    e= (U.T@Q@U - U_prev.T@Q@U_prev +  0.5*int_term)
     # print('e',e)
-    
-    # print('sigma',sigma)
-    # br
-
+ 
     # Update of the critic approximation weights (Equation 20)
 
     # print((1 + np.matmul(sigma.T, sigma))**2)
@@ -85,10 +82,6 @@ def approx_update(x_hist,u_hist, W_c_hat, alpha_c, M, R, dt, n ,m,int_term,t,T):
 
     # print('W_c_hat_dot',W_c_hat_dot)
 
-    # br
-    # W_c_tilde_dot = -alpha_c * np.matmul((np.matmul(sigma, sigma.T) / ((1 + np.matmul(sigma.T, sigma))**2)), W_c_tilde)
-    # Q_bar_tilde = vech_to_mat_sym(W_c_tilde, n + m)
-    # Q_xu_tilde = Q_bar_tilde[n:,:n].T
 
     return np.ravel(W_c_hat_dot) #, W_c_tilde_dot, Q_xu_tilde
 
