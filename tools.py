@@ -18,7 +18,7 @@ def norm_error_vec(true_value, approx_value):
 
     for a_val in approx_value:
         # e.append( 1/(np.linalg.norm(true_value))*np.linalg.norm(a_val.reshape(true_value.shape)-true_value) )
-        e.append( np.linalg.norm(a_val.reshape(true_value.shape)-true_value) )
+        e.append(np.linalg.norm(true_value-a_val.reshape(true_value.shape)))
 
 
 
