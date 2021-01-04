@@ -16,7 +16,7 @@ global u_hist
 
 T = 0.001
 dt=0.0001 # delta t [s]
-t_span =[0, 800]  # Time span for simulation
+t_span =[0, 500]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
@@ -99,8 +99,9 @@ print('W_a_opt',W_a_opt)
 # states += [0]
 
 # -----------------------------------------------------------------------------
-alpha_c = 200
+alpha_c = 50
 alpha_a = 2
+# explore=1.15
 explore=1
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
