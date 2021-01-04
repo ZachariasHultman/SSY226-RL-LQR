@@ -16,7 +16,7 @@ global u_hist
 
 T = 0.001
 dt=0.0001 # delta t [s]
-t_span =[0, 600]  # Time span for simulation
+t_span =[0, 400]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
