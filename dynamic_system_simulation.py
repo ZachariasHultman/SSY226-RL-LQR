@@ -14,19 +14,40 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x =  np.reshape(np.asarray(y[:n]),(n,1))
     W_a_hat = np.reshape(np.asarray(y[n:n+n*m]),(n,m))
-    # print("TIME: "+str(t))
+    print("TIME: "+str(t))
     W_c_hat = y[n+n*m:n+n*m+s]
     int_term=y[-1]
     u = W_a_hat.T@x
 
-    time_ratio=(7*tf/10)
-    if t >= time_ratio:
-        # print('HÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄR')
-        explore=0
-    u_sys = u + explore*0.1*np.exp(-0.0001*t)*1*(np.sin(t)**2*np.cos(t)+np.sin(2*t)**2*np.cos(0.1*t)+np.sin(-1.2*t)**2*np.cos(0.5*t)+np.sin(t)**5+np.sin(1.12*t)**2+np.cos(2.4*t)*np.sin(2.4*t)**3)
-    # u_sys=u+ np.random.normal(0, explore, 1,)
+    time_ratio=(2*tf/10)
 
-    # u=u_sys
+    if t >= time_ratio:
+        # print("TIME: "+str(t))
+        # print('HÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄR')
+        # explore=0
+        noise=0
+        # alpha_a=0
+        # alpha_c=0
+    else:
+    # u_sys = u + explore*0.1*np.exp(-0.0001*t)*1*(np.sin(t)**2*np.cos(t)+np.sin(2*t)**2*np.cos(0.1*t)+np.sin(-1.2*t)**2*np.cos(0.5*t)+np.sin(t)**5+np.sin(1.12*t)**2+np.cos(2.4*t)*np.sin(2.4*t)**3)
+    # u_sys=u+ np.random.normal(loc=0, scale=explore, size=m)
+        noise = 0
+        Range = s
+        freq = np.linspace(0,s*2,Range)
+        # phase = np.random.uniform(0,np.pi)
+        phase = np.linspace(0,np.pi,Range)
+        amplitude = np.linspace(0,explore,Range)
+        # amplitude = np.linspace(0,explore*np.mean(u),Range)
+        for i in range(Range):
+            # noise = noise + amplitude[i]*np.sin(freq[i]*t+phase[i])
+            # phase = np.random.uniform(0,np.pi)
+            noise = noise + explore*np.sin(freq[i]*t+phase[i])
+
+    # print(noise)
+    
+    u_sys=u+noise
+    # print(u_sys)
+
     if t==0:
         x_ac=x
         t_ac=[t]
@@ -42,13 +63,9 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     
     
     W_a_hat_dot = actor.approx_update(x_ac[:,-1:], W_a_hat, W_c_hat, n, m, alpha_a)   
-    # W_a_hat_dot=W_a_hat_dot.flatten()
  
     int_term_dot = (x.T @ M @x + u.T @ R @ u).tolist()[0]
-    # print(int_term_dot)
-    # # br
-    # print('x.T @ M @x',x.T @ M @x)
-    
+
 
     states = [s[0] for s in x_dot]
     for s in W_a_hat_dot.T:

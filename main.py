@@ -14,9 +14,9 @@ global x_ac
 global u_hist
 
 
-T = 0.001
+T = 0.05
 dt=0.0001 # delta t [s]
-t_span =[0, 500]  # Time span for simulation
+t_span =[0, 10]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
@@ -36,10 +36,10 @@ yay = [0.1000,    0.1000,   -0.1000,    0.9821,    0.5783,    0.2344,    0.8106,
 W_c_hat =yay[3:18]
 W_a_hat = yay[18:24]
 int_term=yay[-1]
-states=x_init
-states += [s for s in W_a_hat]
-states += [s for s in W_c_hat]
-states += [int_term]
+# states=x_init
+# states += [s for s in W_a_hat]
+# states += [s for s in W_c_hat]
+# states += [int_term]
 
 # ---------------------DOUBLE INTEGRAL-----------------------------------------------------------
 # n = 2
@@ -88,37 +88,60 @@ print('alpha_a_upper',alpha_a_upper)
 W_a_opt= (np.linalg.pinv(R)@B.T@P).T 
 print('W_a_opt',W_a_opt)
 
-
+offset=0.1
 # if double integral is used insted
-# W_a_hat=(W_a_opt+1).tolist()
-# W_a_hat=(W_a_opt+1).reshape(n*m).tolist()[0]
-# W_c_hat=W_c_opt+1
+W_a_hat=(W_a_opt).tolist()
+# W_a_hat=(W_a_opt).reshape(n*m).tolist()[0]
+# W_c_hat=W_c_opt
+W_a_hat=(W_a_opt+offset*W_a_opt).reshape(n*m).tolist()[0]
+W_c_hat=W_c_opt+offset*W_c_opt
 # states=x_init
 # states += [s for s in W_a_hat]
 # states += [s for s in W_c_hat]
 # states += [0]
-
+int_term=yay[-1]
+states=x_init
+states += [s for s in W_a_hat]
+states += [s for s in W_c_hat]
+states += [int_term]
+# print(states)
+# test=[s for s in W_a_hat]
+# print(norm_error(W_a_opt.reshape(1,n*m), np.asarray(test)))
+# br
 # -----------------------------------------------------------------------------
-alpha_c = 50
-alpha_a = 2
+alpha_c = 120
+alpha_a = 1.2
+# best with the determenistic noise apla_a=2 alpha_c=50
 # explore=1.15
-explore=1
+explore=0.1
+print((7*t_span[1]/10))
+
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
+# phase=np.random.uniform(0,np.pi,s)
 args_ac = (A,B, n, m, alpha_c, alpha_a, M, R, T, explore,dt,t_span[1])
 vals= integrate.solve_ivp(func, t_span=t_span, y0=states, args=args_ac)
-W_a_hat=-1*vals.y[n:n+n*m,-1]
+W_a_hat=vals.y[n:n+n*m,-1]
 W_c_hat=vals.y[n+n*m:n+n*m+s,-1]
-print(vals.t)
+# print(vals.t)
 
-vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
+vals_lqr_new=integrate.odeint(sys_func, [0.1, 0.1, -0.1],  t_eval, args=((np.asarray(-1*W_a_hat).reshape(n,m).T,)))
 # vals_lqr_new=integrate.odeint(sys_func, [0, 1],  t_eval, args=((np.asarray(W_a_hat).reshape(n,m).T,)))
 
-e_a = norm_error(W_a_opt, np.asarray(W_a_hat).reshape(n,m))
+
+# print(vals.y[n+n*m:n+n*m+s,:].T.shape)
+# print(norm_error(W_a_opt.reshape(1,n*m), np.asarray(W_a_opt)))
+# print(vals.y[n:n+n*m,0])
+# print(W_a_opt.reshape(1,n*m))
+# print(norm_error(W_a_opt.reshape(1,n*m), np.asarray(vals.y[n:n+n*m,0])))
+
+
+e_a = norm_error(W_a_opt.reshape(1,n*m), np.asarray(W_a_hat))
 print('W_a error',e_a)
 e_c = norm_error(W_c_opt, W_c_hat)
 print('W_c error',e_c)
 
-e_a = norm_error_vec(W_a_opt.T.reshape(n*m,1), np.array(-1*vals.y[n:n+n*m,:]).T)
+
+e_a = norm_error_vec(np.ravel(W_a_opt.reshape(n*m,1)), np.array(vals.y[n:n+n*m,:]).T)
 # print('W_a error',e_a)
 e_c = norm_error_vec(W_c_opt, np.array(vals.y[n+n*m:n+n*m+s,:]).T)
 # print('W_c error',e_c)
