@@ -14,12 +14,12 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
     s = int(1 / 2 * ((n + m) * (n + m + 1)))
     x =  np.reshape(np.asarray(y[:n]),(n,1))
     W_a_hat = np.reshape(np.asarray(y[n:n+n*m]),(n,m))
-    print("TIME: "+str(t))
+    # print("TIME: "+str(t))
     W_c_hat = y[n+n*m:n+n*m+s]
     int_term=y[-1]
     u = W_a_hat.T@x
 
-    time_ratio=(2*tf/10)
+    time_ratio=(3*tf/10)
 
     if t >= time_ratio:
         # print("TIME: "+str(t))
@@ -29,19 +29,19 @@ def func(t,y,A,B, n, m, alpha_c, alpha_a, M, R, T,explore,dt,tf):
         # alpha_a=0
         # alpha_c=0
     else:
-    # u_sys = u + explore*0.1*np.exp(-0.0001*t)*1*(np.sin(t)**2*np.cos(t)+np.sin(2*t)**2*np.cos(0.1*t)+np.sin(-1.2*t)**2*np.cos(0.5*t)+np.sin(t)**5+np.sin(1.12*t)**2+np.cos(2.4*t)*np.sin(2.4*t)**3)
+        noise = explore*0.1*np.exp(-0.0001*t)*1*(np.sin(t)**2*np.cos(t)+np.sin(2*t)**2*np.cos(0.1*t)+np.sin(-1.2*t)**2*np.cos(0.5*t)+np.sin(t)**5+np.sin(1.12*t)**2+np.cos(2.4*t)*np.sin(2.4*t)**3)
     # u_sys=u+ np.random.normal(loc=0, scale=explore, size=m)
-        noise = 0
-        Range = s
-        freq = np.linspace(0,s*2,Range)
-        # phase = np.random.uniform(0,np.pi)
-        phase = np.linspace(0,np.pi,Range)
-        amplitude = np.linspace(0,explore,Range)
-        # amplitude = np.linspace(0,explore*np.mean(u),Range)
-        for i in range(Range):
-            # noise = noise + amplitude[i]*np.sin(freq[i]*t+phase[i])
-            # phase = np.random.uniform(0,np.pi)
-            noise = noise + explore*np.sin(freq[i]*t+phase[i])
+        # noise = 0
+        # Range = s
+        # freq = np.linspace(0,s*2,Range)
+        # # phase = np.random.uniform(0,np.pi)
+        # phase = np.linspace(0,np.pi,Range)
+        # amplitude = np.linspace(0,explore,Range)
+        # # amplitude = np.linspace(0,explore*np.mean(u),Range)
+        # for i in range(Range):
+        #     # noise = noise + amplitude[i]*np.sin(freq[i]*t+phase[i])
+        #     # phase = np.random.uniform(0,np.pi)
+        #     noise = noise + explore*np.sin(freq[i]*t+phase[i])
 
     # print(noise)
     

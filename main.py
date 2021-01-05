@@ -16,7 +16,7 @@ global u_hist
 
 T = 0.05
 dt=0.0001 # delta t [s]
-t_span =[0, 10]  # Time span for simulation
+t_span =[0, 100]  # Time span for simulation
 t_eval = np.linspace(t_span[0],t_span[1],int(1/dt))  # Time span for simulation
 # ---------------------------------------------------------------------------------
 n = 3
@@ -36,10 +36,10 @@ yay = [0.1000,    0.1000,   -0.1000,    0.9821,    0.5783,    0.2344,    0.8106,
 W_c_hat =yay[3:18]
 W_a_hat = yay[18:24]
 int_term=yay[-1]
-# states=x_init
-# states += [s for s in W_a_hat]
-# states += [s for s in W_c_hat]
-# states += [int_term]
+states=x_init
+states += [s for s in W_a_hat]
+states += [s for s in W_c_hat]
+states += [int_term]
 
 # ---------------------DOUBLE INTEGRAL-----------------------------------------------------------
 # n = 2
@@ -90,30 +90,29 @@ print('W_a_opt',W_a_opt)
 
 offset=0.1
 # if double integral is used insted
-W_a_hat=(W_a_opt).tolist()
+# W_a_hat=(W_a_opt).tolist()
+
 # W_a_hat=(W_a_opt).reshape(n*m).tolist()[0]
 # W_c_hat=W_c_opt
-W_a_hat=(W_a_opt+offset*W_a_opt).reshape(n*m).tolist()[0]
-W_c_hat=W_c_opt+offset*W_c_opt
+
+# W_a_hat=(W_a_opt+offset*W_a_opt).reshape(n*m).tolist()[0]
+# W_c_hat=W_c_opt+offset*W_c_opt
+
+# int_term=yay[-1]
 # states=x_init
 # states += [s for s in W_a_hat]
 # states += [s for s in W_c_hat]
-# states += [0]
-int_term=yay[-1]
-states=x_init
-states += [s for s in W_a_hat]
-states += [s for s in W_c_hat]
-states += [int_term]
+# states += [int_term]
 # print(states)
 # test=[s for s in W_a_hat]
 # print(norm_error(W_a_opt.reshape(1,n*m), np.asarray(test)))
 # br
 # -----------------------------------------------------------------------------
-alpha_c = 120
-alpha_a = 1.2
+alpha_c = 50
+alpha_a = 2
 # best with the determenistic noise apla_a=2 alpha_c=50
 # explore=1.15
-explore=0.1
+explore=1
 print((7*t_span[1]/10))
 
 s = int(1 / 2 * ((n + m) * (n + m + 1)))
@@ -140,12 +139,11 @@ print('W_a error',e_a)
 e_c = norm_error(W_c_opt, W_c_hat)
 print('W_c error',e_c)
 
-
+# e_a = norm_error_vec(np.ravel(W_a_opt.reshape(n*m,1)), np.array(-1*vals.y[n:n+n*m,:]).T)
 e_a = norm_error_vec(np.ravel(W_a_opt.reshape(n*m,1)), np.array(vals.y[n:n+n*m,:]).T)
 # print('W_a error',e_a)
 e_c = norm_error_vec(W_c_opt, np.array(vals.y[n+n*m:n+n*m+s,:]).T)
 # print('W_c error',e_c)
-# print(np.array(vals.y[n+n*m:n+n*m+s,0]).T)
 
 plt.figure(1)
 # Plotting controlled linear system
